@@ -1,5 +1,6 @@
 TEMPLATE = app
-CONFIG = c++11
+CONFIG -= qt
+CONFIG += c++11
 
 QMAKE_CXXFLAGS += -std=c++14
 QMAKE_CXXFLAGS += -pipe -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics
@@ -8,4 +9,20 @@ QMAKE_CXXFLAGS += -pipe -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics
 #QMAKE_CXXFLAGS += -fno-rtti
 #QMAKE_CXXFLAGS += -fno-threadsafe-statics
 
-SOURCES += main.cpp
+LIBS += -lpthread
+
+INCLUDEPATH += ../pdtk
+
+SOURCES += \
+    main.cpp \
+    ../pdtk/application.cpp \
+    ../pdtk/process.cpp \
+    ../pdtk/fsentry.cpp
+
+HEADERS += \
+    ../pdtk/application.h \
+    ../pdtk/object.h \
+    ../pdtk/process.h \
+    ../pdtk/fsentry.h \
+    ../pdtk/cxxutils/posix_helpers.h \
+    ../pdtk/cxxutils/error_helpers.h
