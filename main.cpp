@@ -10,12 +10,20 @@
 #include <cxxutils/colors.h>
 
 // Project
-//#include "splash.h"
+#ifdef WANT_SPLASH
+#include "splash.h"
+#include "framebuffer.h"
+#endif
 #include "initializer.h"
 
 int main(int argc, char *argv[])
 {
   (void)argc,(void)argv;
+
+#ifdef WANT_SPLASH
+  Framebuffer fb;
+  fb.open("/dev/fb0");
+#endif
 
   if(::getpid() != 1)
   {
@@ -24,8 +32,12 @@ int main(int argc, char *argv[])
   }
   else
   {
+#ifdef WANT_SPLASH
+    fb.load(data, width, height);
+#else
     std::fprintf(stdout, "System X\n");
     std::fflush(stdout);
+#endif
   }
 
   Application app;

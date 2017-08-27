@@ -31,7 +31,6 @@ SOURCES += \
     ../pdtk/socket.cpp \
     ../pdtk/specialized/proclist.cpp \
     framebuffer.cpp \
-    mountedpaths.cpp \
     fstable.cpp \
     ../pdtk/specialized/mount.cpp \
     initializer.cpp
@@ -56,7 +55,7 @@ HEADERS += \
     ../pdtk/socket.h \
     ../pdtk/specialized/proclist.h \
     framebuffer.h \
-    mountedpaths.h \
     fstable.h \
     ../pdtk/specialized/mount.h \
-    initializer.h
+    initializer.h \
+    splash.h
