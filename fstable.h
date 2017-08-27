@@ -20,12 +20,12 @@ struct fsentry_t
             const char* opt  = "",
             const char* df   = "",
             const char* mrun = "")
-    : device(d),
-      path(p),
-      filesystems(f),
-      options(o),
-      dump_frequency(u),
-      mount_runlevel(m)
+    : device(dev),
+      path(path),
+      filesystems(fs),
+      options(opt),
+      dump_frequency(df),
+      mount_runlevel(mrun)
   { }
 };
 
