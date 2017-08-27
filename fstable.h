@@ -11,21 +11,21 @@ struct fsentry_t
   std::string filesystems;
   std::string options;
   std::string dump_frequency;
-  std::string mount_runlevel;
+  std::string fsck_pass;
 
   fsentry_t(void) { }
-  fsentry_t(const char* dev,
-            const char* path = "",
-            const char* fs   = "",
-            const char* opt  = "",
-            const char* df   = "",
-            const char* mrun = "")
+  fsentry_t(const char* dev ,
+            const char* path,
+            const char* fs  ,
+            const char* opt  = "defaults",
+            const char* df   = "0",
+            const char* fsck = "0")
     : device(dev),
       path(path),
       filesystems(fs),
       options(opt),
       dump_frequency(df),
-      mount_runlevel(mrun)
+      fsck_pass(fsck)
   { }
 };
 

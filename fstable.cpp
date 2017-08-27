@@ -72,11 +72,11 @@ int parse_fstab(void)
     while(*pos && std::isspace(*pos))
       ++pos;
 
-    entry.mount_runlevel.clear();
+    entry.fsck_pass.clear();
     for(; *pos && std::isgraph(*pos); ++pos)
-      entry.mount_runlevel.push_back(*pos);
+      entry.fsck_pass.push_back(*pos);
 
-    if(!entry.mount_runlevel.empty())
+    if(!entry.fsck_pass.empty())
       g_fstab.push_back(entry);
   }
   ::free(line);
