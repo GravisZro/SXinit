@@ -29,8 +29,6 @@
 #endif
 
 
-static const std::list<std::string> g_boot_runlevel = { "0", "boot" };
-
 Initializer::Initializer(void)
   : m_have_procfs(false),
     m_have_mcfs(false),
@@ -46,13 +44,11 @@ Initializer::Initializer(void)
         case "proc"_hash: // if entry is for proc
           m_have_procfs = true;
           m_procfs_mountpoint = entry.path;
-          entry.mount_runlevel = g_boot_runlevel.front();
           break;
 
         case "mc"_hash: // if entry is for mcfs
           m_have_mcfs = true;
           m_mcfs_mountpoint = entry.path;
-          entry.mount_runlevel = g_boot_runlevel.front();
           break;
 
         default:
@@ -63,29 +59,24 @@ Initializer::Initializer(void)
 #if defined(WANT_PROCFS)
     ::mkdir(m_procfs_mountpoint.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
     if(!m_have_procfs) // no fstab entry for procfs!
-      g_fstab.emplace_back("proc", m_procfs_mountpoint.c_str(), "proc", "defaults", "0", "0");
+      g_fstab.emplace_back("proc", m_procfs_mountpoint.c_str(), "proc", "defaults");
 #endif
     ::mkdir(m_mcfs_mountpoint.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
     if(!m_have_mcfs) // no fstab entry for MCFS!
-      g_fstab.emplace_back("mcfs", m_mcfs_mountpoint.c_str(), "mcfs", "defaults", "0", "0");
+      g_fstab.emplace_back("mcfs", m_mcfs_mountpoint.c_str(), "mcfs", "defaults");
 
-    for(fsentry_t& entry : g_fstab) // mount all filesystems that need mounting at boot
+    for(fsentry_t& entry : g_fstab) // mount all filesystems
     {
-      if(std::find(g_boot_runlevel.begin(),
-                   g_boot_runlevel.end(),
-                   entry.mount_runlevel) != g_boot_runlevel.end()) // if mount_runlevel is in g_boot_runlevel
+      int rval = mount(entry.device.c_str(),
+                       entry.path.c_str(),
+                       entry.filesystems.c_str(),
+                       entry.options.c_str());
+      if(entry.device == "mcfs" && entry.path == m_mcfs_mountpoint)
       {
-        int rval = mount(entry.device.c_str(),
-                         entry.path.c_str(),
-                         entry.filesystems.c_str(),
-                         entry.options.c_str());
-        if(entry.device == "mcfs" && entry.path == m_mcfs_mountpoint)
-        {
-          if(rval == posix::success_response) // mounted MCFS with kernel driver!
-            Object::singleShot(this, &Initializer::start_sxconfig); // invoke sxconfig daemon
-          else // try FUSE based MCFS
-            Object::singleShot(this, &Initializer::start_mcfs); // invoke FUSE based MCFS mount
-        }
+        if(rval == posix::success_response) // mounted MCFS with kernel driver
+          Object::singleShot(this, &Initializer::start_sxconfig); // invoke sxconfig daemon
+        else // kernel driver failed/doesn't exist so try FUSE based MCFS
+          Object::singleShot(this, &Initializer::start_mcfs); // invoke FUSE based MCFS mount
       }
     }
   }
