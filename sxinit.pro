@@ -33,7 +33,8 @@ SOURCES += \
     framebuffer.cpp \
     mountedpaths.cpp \
     fstable.cpp \
-    ../pdtk/specialized/mount.cpp
+    ../pdtk/specialized/mount.cpp \
+    initializer.cpp
 
 HEADERS += \
     ../pdtk/application.h \
@@ -57,4 +58,5 @@ HEADERS += \
     framebuffer.h \
     mountedpaths.h \
     fstable.h \
-    ../pdtk/specialized/mount.h
+    ../pdtk/specialized/mount.h \
+    initializer.h
