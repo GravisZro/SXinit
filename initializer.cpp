@@ -1,5 +1,8 @@
 #include "initializer.h"
 
+// POSIX
+#include <sys/stat.h>
+
 // POSIX++
 #include <climits>
 
@@ -24,8 +27,16 @@
 #define SXCONFIG_PATH "/bin/sxconfig"
 #endif
 
+#ifndef SXCONFIG_SOCKET
+#define SXCONFIG_SOCKET "/config/io"
+#endif
+
 #ifndef SXEXECUTOR_PATH
 #define SXEXECUTOR_PATH "/bin/sxexecutor"
+#endif
+
+#ifndef SXEXECUTOR_SOCKET
+#define SXEXECUTOR_SOCKET "/executor/io"
 #endif
 
 
@@ -85,66 +96,156 @@ Initializer::Initializer(void)
 void Initializer::restart_mcfs(posix::fd_t fd, EventData_t data)
 {
   (void)fd, (void)data;
+  if(m_procs.find(MCFS_PATH) != m_procs.end()) // if process existed once
+  {
+    m_procs.erase(MCFS_PATH); // erase old process entry
+    ::sleep(1); // safety delay
+  }
+  start_mcfs();
 }
 
 void Initializer::restart_sxconfig(posix::fd_t fd, EventData_t data)
 {
   (void)fd, (void)data;
+  if(m_procs.find(SXCONFIG_PATH) != m_procs.end()) // if process existed once
+  {
+    m_procs.erase(SXCONFIG_PATH); // erase old process entry
+    ::sleep(1); // safety delay
+  }
+  start_sxconfig();
 }
 
 void Initializer::restart_sxexecutor(posix::fd_t fd, EventData_t data)
 {
   (void)fd, (void)data;
+  if(m_procs.find(SXEXECUTOR_PATH) != m_procs.end()) // if process existed once
+  {
+    m_procs.erase(SXEXECUTOR_PATH); // erase old process entry
+    ::sleep(1); // safety delay
+  }
+  start_sxexecutor();
 }
 
 void Initializer::start_mcfs(void)
 {
-  if(m_procs.find(MCFS_PATH) != m_procs.end()) // if process is being restarted
-  {
-    ::sleep(1);
-    m_procs.erase(MCFS_PATH);
-  }
+  if(m_procs.find(MCFS_PATH) != m_procs.end()) // if process exists
+    return; // do not try to start it
+
   Process& mcfs = m_procs[MCFS_PATH];
-  Object::connect(mcfs.finished, this, &Initializer::restart_mcfs); // restart FUSE FS when it exits
   if(mcfs.setArguments({MCFS_PATH, "-f", "-o", "allow_other", "/mc"}) &&
      mcfs.invoke())
-  {
-
-  }
+    Object::singleShot(this, &Initializer::test_mcfs); // test if mcfs daemon is active
 }
 
 void Initializer::start_sxconfig(void)
 {
-  if(m_procs.find(SXCONFIG_PATH) != m_procs.end()) // if process is being restarted
-  {
-    ::sleep(1);
-    m_procs.erase(SXCONFIG_PATH);
-  }
+  if(m_procs.find(SXCONFIG_PATH) != m_procs.end()) // if process exists
+    return; // do not try to start it
+
   Process& sxconfig = m_procs[SXCONFIG_PATH];
-  Object::connect(sxconfig.finished, this, &Initializer::restart_sxconfig);
-  if(sxconfig.setExecutable(SXCONFIG_PATH) &&
+  if(sxconfig.setArguments({SXCONFIG_PATH, "-f"}) &&
      sxconfig.setUserID(posix::getuserid("config")) &&
      sxconfig.invoke())
-  {
-
-  }
+    Object::singleShot(this, &Initializer::test_sxconfig); // test if sxconfig created a socket
 }
 
 void Initializer::start_sxexecutor(void)
 {
-  if(m_procs.find(SXEXECUTOR_PATH) != m_procs.end()) // if process is being restarted
-  {
-    ::sleep(1);
-    m_procs.erase(SXEXECUTOR_PATH);
-  }
+  if(m_procs.find(SXEXECUTOR_PATH) != m_procs.end()) // if process exists
+    return; // do not try to start it
+
   Process& sxexecutor = m_procs[SXEXECUTOR_PATH];
-  Object::connect(sxexecutor.finished, this, &Initializer::restart_sxexecutor);
-  if(sxexecutor.setExecutable(SXEXECUTOR_PATH) &&
+  if(sxexecutor.setArguments({SXEXECUTOR_PATH, "-f"}) &&
      sxexecutor.setUserID(posix::getuserid("executor")) &&
      sxexecutor.invoke())
-  {
+    Object::singleShot(this, &Initializer::test_sxexecutor); // test if sxexecutor created a socket
+}
 
+void Initializer::test_mcfs(void) // waits for the mcfs to appear in the mount table
+{
+  int retries = 5;
+  for(; retries > 0; --retries, ::sleep(1)) // keep trying and wait a second between tries
+  {
+    if(parse_mtab() != posix::success_response) // parse error
+    {
+      Object::singleShot(this, &Initializer::start_sxconfig); // start sxconfig
+      retries = INT_MIN; // assume it's ok and exit loop
+    }
+    else // parsed ok
+    {
+      for(auto pos = g_mtab.begin(); retries > 0 && pos != g_mtab.end(); ++pos) // iterate newly parsed mount table
+      {
+        if(pos->device == "mcfs" && pos->path == m_mcfs_mountpoint) // if mcfs is mounted
+        {
+          Object::singleShot(this, &Initializer::start_sxconfig); // start sxconfig
+          retries = INT_MIN; // exit loop
+        }
+      }
+    }
+  }
+
+  if(retries == INT_MIN) // if succeeded
+  {
+    Object::connect(m_procs[MCFS_PATH].finished, this, &Initializer::restart_mcfs); // restart FUSE MCFS if it exits
+  }
+  else if(!retries) // if tried 5 times and never succeeded
+  {
+    Object::singleShot(this, &Initializer::start_sxexecutor); // sxconfig will not work without mcfs, so skip it completely
   }
 }
 
+void Initializer::test_sxconfig(void)
+{
+  struct stat data;
+  std::string findpath = m_mcfs_mountpoint + SXCONFIG_SOCKET;
+  int retries = 5;
 
+  for(; retries > 0; --retries, ::sleep(1)) // keep trying and wait a second between tries
+  {
+    if(::stat(findpath.c_str(), &data) == posix::success_response && // stat file on VFS worked AND
+       data.st_mode & S_IFSOCK) // it's a socket file
+    {
+      Object::singleShot(this, &Initializer::start_sxexecutor); // start sxexecutor
+      retries = INT_MIN; // exit loop
+    }
+  }
+
+  if(retries == INT_MIN) // if succeeded then connect make sure it will restart when needed
+  {
+    Object::connect(m_procs[SXCONFIG_PATH].finished, this, &Initializer::restart_sxconfig); // restart sxconfig if it exits
+  }
+  else if(!retries) // if tried 5 times and never succeeded
+  {
+    Object::singleShot(this, &Initializer::start_sxexecutor); // sxconfig seems to have failed to start, ignore it
+  }
+}
+
+void Initializer::test_sxexecutor(void)
+{
+  struct stat data;
+  std::string findpath = m_mcfs_mountpoint + SXEXECUTOR_SOCKET;
+  int retries = 5;
+
+  for(; retries > 0; --retries, ::sleep(1)) // keep trying and wait a second between tries
+  {
+    if(::stat(findpath.c_str(), &data) == posix::success_response && // stat file on VFS worked AND
+       data.st_mode & S_IFSOCK) // it's a socket file
+    {
+      retries = INT_MIN; // exit loop!
+    }
+  }
+
+  if(retries == INT_MIN) // if succeeded then connect make sure it will restart when needed
+  {
+    Object::connect(m_procs[SXEXECUTOR_PATH].finished, this, &Initializer::restart_sxexecutor); // restart sxexecutor if it exits
+  }
+  else if(!retries) // if tried 5 times and never succeeded
+  {
+    Object::singleShot(this, &Initializer::run_emergency_shell); // run emergency shell
+  }
+}
+
+void Initializer::run_emergency_shell(void)
+{
+
+}

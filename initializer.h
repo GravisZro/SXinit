@@ -23,6 +23,12 @@ private:
   void start_sxconfig(void);
   void start_sxexecutor(void);
 
+  void test_mcfs(void);
+  void test_sxconfig(void);
+  void test_sxexecutor(void);
+
+  void run_emergency_shell(void);
+
   bool m_have_procfs;
   bool m_have_mcfs;
   std::string m_procfs_mountpoint;
