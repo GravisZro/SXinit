@@ -31,6 +31,9 @@ struct fsentry_t
 
 
 int parse_fstab(void);
+int parse_mtab(void);
+
 extern std::list<struct fsentry_t> g_fstab;
+extern std::list<struct fsentry_t> g_mtab;
 
 #endif // FSTABLE_H

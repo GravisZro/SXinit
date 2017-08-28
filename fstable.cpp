@@ -7,27 +7,25 @@
 #include <cxxutils/posix_helpers.h>
 
 std::list<struct fsentry_t> g_fstab;
+std::list<struct fsentry_t> g_mtab;
 
 #if defined(__unix__)
 
-int parse_fstab(void)
+int parse_table(std::list<struct fsentry_t>& table, const char* filename)
 {
   struct fsentry_t entry;
-  g_fstab.clear();
+  table.clear();
 
-  FILE* fstab = posix::fopen("/etc/fstab", "r");
+  std::FILE* file = posix::fopen(filename, "r");
 
-  if(fstab == nullptr)
-    return errno;
+  if(file == nullptr)
+    return posix::error_response;
 
   posix::ssize_t count = 0;
   posix::size_t size = 0;
   char* line = nullptr;
-  while((count = ::getline(&line, &size, fstab)) != posix::error_response)
+  while((count = ::getline(&line, &size, file)) != posix::error_response)
   {
-    if(count == posix::error_response)
-      return errno;
-
     char* comment = std::strchr(line, '#');
     if(comment != nullptr)
       *comment = '\0';
@@ -77,12 +75,19 @@ int parse_fstab(void)
       entry.fsck_pass.push_back(*pos);
 
     if(!entry.fsck_pass.empty())
-      g_fstab.push_back(entry);
+      table.push_back(entry);
   }
-  ::free(line);
+  ::free(line); // use C free() because we're using C getline()
+  line = nullptr;
   return posix::success();
 }
 
+
+int parse_fstab(void)
+{ return parse_table(g_fstab, "/etc/fstab"); }
+
+int parse_mtab(void)
+{ return parse_table(g_mtab, "/etc/mtab"); }
 
 #else
 #error Unsupported platform! >:(
