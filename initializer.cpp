@@ -213,7 +213,7 @@ void Initializer::test_mcfs(void) // waits for the mcfs to appear in the mount t
     if(parse_mtab() == posix::success_response) // parsed ok
       for(auto pos = g_mtab.begin(); retries > 0 && pos != g_mtab.end(); ++pos) // iterate newly parsed mount table
         if(pos->device == "mcfs" && pos->path == m_mcfs_mountpoint) // if mcfs is mounted
-          retries = INT_MIN; // exit loop
+          retries = INT_MIN + 1; // exit loop
     if(retries > 0)
       Display::setItemState("MCFS", terminal::style::brightYellow, "Retrying");
   }
@@ -273,7 +273,7 @@ void Initializer::test_config_service(void)
   {
     if(::stat(findpath.c_str(), &data) == posix::success_response && // stat file on VFS worked AND
        data.st_mode & S_IFSOCK) // it's a socket file
-      retries = INT_MIN; // exit loop
+      retries = INT_MIN + 1; // exit loop
     else
       Display::setItemState("Config Service", terminal::style::brightYellow, "Retrying");
   }
@@ -334,7 +334,7 @@ void Initializer::test_executor_service(void)
   {
     if(::stat(findpath.c_str(), &data) == posix::success_response && // stat file on VFS worked AND
        data.st_mode & S_IFSOCK) // it's a socket file
-      retries = INT_MIN; // exit loop!
+      retries = INT_MIN + 1; // exit loop!
     else
       Display::setItemState("Executor Service", terminal::style::brightYellow, "Retrying");
   }
