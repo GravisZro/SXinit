@@ -13,9 +13,11 @@ QMAKE_CXXFLAGS += -pipe -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics
 #QMAKE_CXXFLAGS += -fno-exceptions
 #QMAKE_CXXFLAGS += -fno-rtti
 #QMAKE_CXXFLAGS += -fno-threadsafe-statics
-DEFINES += ENABLE_PROCESS_EVENT_TRACKING
+#DEFINES += GLOBAL_PROCESS_EVENT_TRACKING
 #DEFINES += ENABLE_UEVENT_TRACKING
 DEFINES += INTERRUPTED_WRAPPER
+DEFINES += WANT_CONFIG_SERVICE
+DEFINES += WANT_PROCFS
 #LIBS += -lpthread
 
 INCLUDEPATH += ../pdtk
@@ -33,7 +35,8 @@ SOURCES += \
     framebuffer.cpp \
     fstable.cpp \
     ../pdtk/specialized/mount.cpp \
-    initializer.cpp
+    initializer.cpp \
+    display.cpp
 
 HEADERS += \
     ../pdtk/application.h \
@@ -51,11 +54,13 @@ HEADERS += \
     ../pdtk/cxxutils/syslogstream.h \
     ../pdtk/cxxutils/socket_helpers.h \
     ../pdtk/specialized/peercred.h \
-    ../pdtk/cxxutils/colors.h \
     ../pdtk/socket.h \
     ../pdtk/specialized/proclist.h \
     framebuffer.h \
     fstable.h \
     ../pdtk/specialized/mount.h \
     initializer.h \
-    splash.h
+    splash.h \
+    display.h \
+    ../pdtk/cxxutils/hashing.h \
+    ../pdtk/cxxutils/vterm.h

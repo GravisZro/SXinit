@@ -1,41 +1,27 @@
 #ifndef INITIALIZER_H
 #define INITIALIZER_H
 
-// STL
-#include <string>
-#include <unordered_map>
+#include <specialized/eventbackend.h>
 
-// PDTK
-#include <object.h>
-#include <process.h>
-
-class Initializer : public Object
+namespace Initializer
 {
-public:
-  Initializer(void);
+  void start(void);
 
-private:
   void restart_mcfs(posix::fd_t fd, EventData_t data);
-  void restart_sxconfig(posix::fd_t fd, EventData_t data);
-  void restart_sxexecutor(posix::fd_t fd, EventData_t data);
-
   void start_mcfs(void);
-  void start_sxconfig(void);
-  void start_sxexecutor(void);
-
   void test_mcfs(void);
-  void test_sxconfig(void);
-  void test_sxexecutor(void);
+
+#if defined(WANT_CONFIG_SERVICE)
+  void restart_config_service(posix::fd_t fd, EventData_t data);
+  void start_config_service(void);
+  void test_config_service(void);
+#endif
+
+  void restart_executor_service(posix::fd_t fd, EventData_t data);
+  void start_executor_service(void);
+  void test_executor_service(void);
 
   void run_emergency_shell(void);
-
-  bool m_have_procfs;
-  bool m_have_mcfs;
-  std::string m_procfs_mountpoint;
-  std::string m_mcfs_mountpoint;
-  std::unordered_map<const char*, Process> m_procs;
-};
-
-
+}
 
 #endif // INITIALIZER_H

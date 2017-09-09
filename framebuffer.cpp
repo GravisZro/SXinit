@@ -12,22 +12,22 @@
 
 // PDTK
 #include <cxxutils/error_helpers.h>
-#include <cxxutils/colors.h>
+#include <cxxutils/vterm.h>
 
 
 bool FrameBuffer::open(const char* device)
 {
   m_fd = posix::open(device, O_RDWR);
 
-  flaw(m_fd < 0, posix::warning,, false,
+  flaw(m_fd < 0, terminal::warning,, false,
        "Unable to open framebuffer device: %s", std::strerror(errno))
 
   struct fb_var_screeninfo screen_info;
-  flaw(posix::ioctl(m_fd, FBIOGET_VSCREENINFO, &screen_info), posix::warning,, false,
+  flaw(posix::ioctl(m_fd, FBIOGET_VSCREENINFO, &screen_info), terminal::warning,, false,
        "Unable to get virtual screen info from framebuffer: %s", std::strerror(errno))
 
   struct fb_fix_screeninfo fixed_info;
-  flaw(posix::ioctl(m_fd, FBIOGET_FSCREENINFO, &fixed_info), posix::warning,, false,
+  flaw(posix::ioctl(m_fd, FBIOGET_FSCREENINFO, &fixed_info), terminal::warning,, false,
        "Unable to get fixed screen info from framebuffer: %s", std::strerror(errno))
 
   m_bufheight = screen_info.yres_virtual;
