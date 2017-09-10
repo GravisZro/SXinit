@@ -20,47 +20,48 @@ DEFINES += WANT_CONFIG_SERVICE
 DEFINES += WANT_PROCFS
 #LIBS += -lpthread
 
-INCLUDEPATH += ../pdtk
+PDTK = ../pdtk
+INCLUDEPATH += $$PDTK
 
 SOURCES += \
     main.cpp \
-    ../pdtk/application.cpp \
-    ../pdtk/process.cpp \
-    ../pdtk/specialized/procstat.cpp \
-    ../pdtk/specialized/eventbackend.cpp \
-    ../pdtk/cxxutils/configmanip.cpp \
-    ../pdtk/specialized/peercred.cpp \
-    ../pdtk/socket.cpp \
-    ../pdtk/specialized/proclist.cpp \
     framebuffer.cpp \
     fstable.cpp \
-    ../pdtk/specialized/mount.cpp \
     initializer.cpp \
-    display.cpp
+    display.cpp \
+    $$PDTK/application.cpp \
+    $$PDTK/process.cpp \
+    $$PDTK/socket.cpp \
+    $$PDTK/cxxutils/configmanip.cpp \
+    $$PDTK/specialized/procstat.cpp \
+    $$PDTK/specialized/eventbackend.cpp \
+    $$PDTK/specialized/peercred.cpp \
+    $$PDTK/specialized/proclist.cpp \
+    $$PDTK/specialized/mount.cpp
 
 HEADERS += \
-    ../pdtk/application.h \
-    ../pdtk/object.h \
-    ../pdtk/process.h \
-    ../pdtk/cxxutils/vfifo.h \
-    ../pdtk/cxxutils/posix_helpers.h \
-    ../pdtk/cxxutils/error_helpers.h \
-    ../pdtk/specialized/procstat.h \
-    ../pdtk/specialized/eventbackend.h \
-    ../pdtk/cxxutils/cstringarray.h \
-    ../pdtk/cxxutils/pipedspawn.h \
-    ../pdtk/cxxutils/sharedmem.h \
-    ../pdtk/cxxutils/configmanip.h \
-    ../pdtk/cxxutils/syslogstream.h \
-    ../pdtk/cxxutils/socket_helpers.h \
-    ../pdtk/specialized/peercred.h \
-    ../pdtk/socket.h \
-    ../pdtk/specialized/proclist.h \
     framebuffer.h \
     fstable.h \
-    ../pdtk/specialized/mount.h \
     initializer.h \
     splash.h \
     display.h \
-    ../pdtk/cxxutils/hashing.h \
-    ../pdtk/cxxutils/vterm.h
+    $$PDTK/application.h \
+    $$PDTK/object.h \
+    $$PDTK/process.h \
+    $$PDTK/cxxutils/vfifo.h \
+    $$PDTK/cxxutils/posix_helpers.h \
+    $$PDTK/cxxutils/error_helpers.h \
+    $$PDTK/cxxutils/cstringarray.h \
+    $$PDTK/cxxutils/hashing.h \
+    $$PDTK/cxxutils/vterm.h \
+    $$PDTK/cxxutils/pipedspawn.h \
+    $$PDTK/cxxutils/sharedmem.h \
+    $$PDTK/cxxutils/configmanip.h \
+    $$PDTK/cxxutils/syslogstream.h \
+    $$PDTK/cxxutils/socket_helpers.h \
+    $$PDTK/specialized/procstat.h \
+    $$PDTK/specialized/eventbackend.h \
+    $$PDTK/specialized/mount.h \
+    $$PDTK/specialized/peercred.h \
+    $$PDTK/specialized/proclist.h \
+    $$PDTK/socket.h
