@@ -87,44 +87,69 @@ void Display::clearItems(void) noexcept
   itempos.clear();
 }
 
-void Display::setItemsLocation(uint16_t row, uint16_t column) noexcept
+bool Display::setItemsLocation(uint16_t row, uint16_t column) noexcept
 {
+  if(row >= maxRows || column == maxColumns)
+    return false;
   offsetRows = row;
   offsetColumns = column;
+  return true;
 }
 
-void Display::setItem(const char* item, uint16_t row, uint16_t column) noexcept
+bool Display::addItem(const char* item) noexcept
 {
+  uint16_t column = 0;
+  uint16_t row = 0;
+  while(items.at(column).at(row) != nullptr)
+  {
+    if(row == maxRows)
+    {
+      row = 0;
+      ++column;
+    }
+    else
+      ++row;
+    if(column == maxColumns)
+      return false;
+  }
+  return setItem(item, row, column);
+}
+
+bool Display::setItem(const char* item, uint16_t row, uint16_t column) noexcept
+{
+  if(row >= maxRows || column == maxColumns)
+    return false;
   size_t len = std::strlen(item);
   size_t& current = item_column_widths.at(column);
   if(len > current)
     current = len;
 
   items.at(column).at(row) = item;
-  itempos.emplace(item, std::make_pair(row, column));
+  return itempos.emplace(item, std::make_pair(row, column)).second;
 }
 
-void Display::setItemState(const char* item, const char* style, const char* state) noexcept
+bool Display::setItemState(const char* item, const char* style, const char* state) noexcept
 {
   auto pos = itempos.find(item);
-  if(pos != itempos.end())
-  {
-    uint16_t rowpos = offsetRows + pos->second.first + 1;
-    uint16_t colpos = offsetColumns + getColumnOffset(pos->second.second) + 1;
-    terminal::write(terminal::style::reset); // reset
+  if(pos == itempos.end())
+    return false;
 
-    terminal::setCursorPosition(rowpos, colpos);
-    terminal::write(item);
-    colpos += item_column_widths.at(pos->second.second) + 2;
+  uint16_t rowpos = offsetRows + pos->second.first + 1;
+  uint16_t colpos = offsetColumns + getColumnOffset(pos->second.second) + 1;
+  terminal::write(terminal::style::reset); // reset
 
-    terminal::setCursorPosition(rowpos, colpos);
-    terminal::write("[        ]");
-    ++colpos;
+  terminal::setCursorPosition(rowpos, colpos);
+  terminal::write(item);
+  colpos += item_column_widths.at(pos->second.second) + 2;
 
-    terminal::setCursorPosition(rowpos, colpos);
-    terminal::write(style);
-    terminal::write(state);
-    terminal::write(terminal::style::reset); // reset
-    terminal::write("\n");
-  }
+  terminal::setCursorPosition(rowpos, colpos);
+  terminal::write("[        ]");
+  ++colpos;
+
+  terminal::setCursorPosition(rowpos, colpos);
+  terminal::write(style);
+  terminal::write(state);
+  terminal::write(terminal::style::reset); // reset
+  terminal::write("\n");
+  return true;
 }

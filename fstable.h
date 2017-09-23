@@ -2,33 +2,28 @@
 #define FSTABLE_H
 
 #include <list>
-#include <string>
+#include <climits>
 
 struct fsentry_t
 {
-  std::string device;
-  std::string path;
-  std::string filesystems;
-  std::string options;
-  std::string dump_frequency;
-  std::string fsck_pass;
+  char device[PATH_MAX];
+  char path[PATH_MAX];
+  char filesystems[2048];
+  char options[4096];
+  char dump_frequency;
+  char pass;
 
-  fsentry_t(void) { }
-  fsentry_t(const char* dev ,
-            const char* path,
-            const char* fs  ,
-            const char* opt  = "defaults",
-            const char* df   = "0",
-            const char* fsck = "0")
-    : device(dev),
-      path(path),
-      filesystems(fs),
-      options(opt),
-      dump_frequency(df),
-      fsck_pass(fsck)
-  { }
+  fsentry_t(void);
+  fsentry_t(const char* _device,
+            const char* _path,
+            const char* _filesystems,
+            const char* _options        = "defaults",
+            const char* _dump_frequency = "0",
+            const char* _pass           = "0");
 };
 
+
+int parse_table(std::list<struct fsentry_t>& table, const char* filename);
 
 int parse_fstab(void);
 int parse_mtab(void);

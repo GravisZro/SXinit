@@ -11,6 +11,33 @@ std::list<struct fsentry_t> g_mtab;
 
 #if defined(__unix__)
 
+fsentry_t::fsentry_t(void)
+{
+  std::memset(this, 0, sizeof(fsentry_t));
+}
+
+fsentry_t::fsentry_t(const char* _device,
+                     const char* _path,
+                     const char* _filesystems,
+                     const char* _options,
+                     const char* _dump_frequency,
+                     const char* _pass)
+{
+  if(std::strlen(_device) < sizeof(fsentry_t::device))
+    std::strcpy(device, _device);
+  if(std::strlen(_path) < sizeof(fsentry_t::path))
+    std::strcpy(path, _path);
+  if(std::strlen(_filesystems) < sizeof(fsentry_t::filesystems))
+    std::strcpy(filesystems, _filesystems);
+  if(std::strlen(_options) < sizeof(fsentry_t::options))
+    std::strcpy(options, _options);
+  if(std::strlen(_dump_frequency) == 1)
+    dump_frequency = _dump_frequency[0];
+  if(std::strlen(_pass) == 1)
+    pass = _pass[0];
+}
+
+
 int parse_table(std::list<struct fsentry_t>& table, const char* filename)
 {
   struct fsentry_t entry;
@@ -24,8 +51,10 @@ int parse_table(std::list<struct fsentry_t>& table, const char* filename)
   posix::ssize_t count = 0;
   posix::size_t size = 0;
   char* line = nullptr;
+  char* begin = nullptr;
   while((count = ::getline(&line, &size, file)) != posix::error_response)
   {
+    std::memset(&entry, 0, sizeof(fsentry_t));
     char* comment = std::strchr(line, '#');
     if(comment != nullptr)
       *comment = '\0';
@@ -35,46 +64,57 @@ int parse_table(std::list<struct fsentry_t>& table, const char* filename)
     while(*pos && std::isspace(*pos))
       ++pos;
 
-    entry.device.clear();
-    for(; *pos && std::isgraph(*pos); ++pos)
-      entry.device.push_back(*pos);
+    for(char* field = begin = entry.device;
+        *pos && pos < begin + sizeof(fsentry_t::device) &&
+        std::isgraph(*pos); ++field, ++pos)
+      *field = *pos;
+    if(pos > begin + sizeof(fsentry_t::device))
+      continue;
 
     while(*pos && std::isspace(*pos))
       ++pos;
 
-    entry.path.clear();
-    for(; *pos && std::isgraph(*pos); ++pos)
-      entry.path.push_back(*pos);
+    for(char* field = begin = entry.path;
+        *pos && pos < begin + sizeof(fsentry_t::path) &&
+        std::isgraph(*pos); ++field, ++pos)
+      *field = *pos;
+    if(pos > begin + sizeof(fsentry_t::path))
+      continue;
 
     while(*pos && std::isspace(*pos))
       ++pos;
 
-    entry.filesystems.clear();
-    for(; *pos && std::isgraph(*pos); ++pos)
-      entry.filesystems.push_back(*pos);
+    for(char* field = begin = entry.filesystems;
+        *pos && pos < begin + sizeof(fsentry_t::filesystems) &&
+        std::isgraph(*pos); ++field, ++pos)
+      *field = *pos;
+    if(pos > begin + sizeof(fsentry_t::filesystems))
+      continue;
 
     while(*pos && std::isspace(*pos))
       ++pos;
 
-    entry.options.clear();
-    for(; *pos && std::isgraph(*pos); ++pos)
-      entry.options.push_back(*pos);
+    for(char* field = begin = entry.options;
+        *pos && pos < begin + sizeof(fsentry_t::options) &&
+        std::isgraph(*pos); ++field, ++pos)
+      *field = *pos;
+    if(pos > begin + sizeof(fsentry_t::options))
+      continue;
 
     while(*pos && std::isspace(*pos))
       ++pos;
 
-    entry.dump_frequency.clear();
-    for(; *pos && std::isgraph(*pos); ++pos)
-      entry.dump_frequency.push_back(*pos);
+    entry.dump_frequency = *pos;
+    ++pos;
+    if(!std::isspace(*pos))
+      continue;
 
     while(*pos && std::isspace(*pos))
       ++pos;
 
-    entry.fsck_pass.clear();
-    for(; *pos && std::isgraph(*pos); ++pos)
-      entry.fsck_pass.push_back(*pos);
+    entry.pass = *pos;
 
-    if(!entry.fsck_pass.empty())
+    if(std::isgraph(entry.pass))
       table.push_back(entry);
   }
   ::free(line); // use C free() because we're using C getline()

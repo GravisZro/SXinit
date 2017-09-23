@@ -17,6 +17,7 @@
 #include <process.h>
 #include <cxxutils/hashing.h>
 #include <specialized/mount.h>
+#include <specialized/blockdevices.h>
 
 // Project
 #include "fstable.h"
@@ -39,36 +40,39 @@
 #endif
 
 #ifndef BIN_PATH
-#define BIN_PATH            "/sbin"
+#define SBIN_PATH           "/sbin"
 #endif
 
-#ifndef DEV_PATH
-#define DEV_PATH            "/dev"
+#ifndef PROCFS_PATH
+#define PROCFS_PATH         "/proc"
 #endif
 
-#ifndef PROC_PATH
-#define PROC_PATH           "/proc"
+#ifndef SYSFS_PATH
+#define SYSFS_PATH          "/sys"
+#endif
+
+#ifndef DEVFS_PATH
+#define DEVFS_PATH          "/dev"
 #endif
 
 #ifndef MCFS_PATH
 #define MCFS_PATH           "/mc"
 #endif
 
-
 #ifndef MCFS_BIN
-#define MCFS_BIN            BIN_PATH "/mcfs"
+#define MCFS_BIN            SBIN_PATH "/mcfs"
 #endif
 
 #ifndef CONFIG_BIN
-#define CONFIG_BIN          BIN_PATH "/" CONFIG_SERVICE
+#define CONFIG_BIN          SBIN_PATH "/" CONFIG_SERVICE
 #endif
 
 #ifndef EXECUTOR_BIN
-#define EXECUTOR_BIN        BIN_PATH "/" EXECUTOR_SERVICE
+#define EXECUTOR_BIN        SBIN_PATH "/" EXECUTOR_SERVICE
 #endif
 
 #ifndef MCFS_ARGS
-#define MCFS_ARGS           MCFS_BIN, MCFS_PATH, "-f", "-o", "allow_other"
+#define MCFS_ARGS           MCFS_BIN, MCFS_PATH, "-o", "allow_other"
 #endif
 
 #ifndef CONFIG_ARGS
@@ -87,33 +91,190 @@
 #define EXECUTOR_SOCKET     "/" EXECUTOR_USERNAME "/io"
 #endif
 
+#ifdef __linux__
+#define PROCFS_NAME    "proc"
+#define PROCFS_OPTIONS "default"
+#define WANT_PROCFS
+#else
+#define PROCFS_NAME    "procfs"
+#define PROCFS_OPTIONS "linux"
+#endif
+
+#undef CONCAT
+#define CONCAT(x, y) x##y
 
 
 namespace Initializer
 {
   bool m_have_procfs;
+  bool m_have_sysfs;
   bool m_have_mcfs;
   std::string m_procfs_mountpoint;
+  std::string m_sysfs_mountpoint;
   std::string m_mcfs_mountpoint;
   std::unordered_map<const char*, Process> m_procs;
+
+#if defined(WANT_MOUNT_ROOT)
+  static fsentry_t root_entry;
+  static std::map<std::string, std::string> boot_options;
+#endif
 }
+
 
 void Initializer::start(void)
 {
   Display::clearItems();
-  Display::setItemsLocation(10, 1);
-  Display::setItem("MCFS", 0, 0);
-  Display::setItem("Config Service", 1, 0);
-  Display::setItem("Executor Service", 2, 0);
+  Display::setItemsLocation(5, 1);
 
-  Display::setItemState("MCFS", "", "Waiting ");
-  Display::setItemState("Config Service", "", "Waiting ");
-  Display::setItemState("Executor Service", "", "Waiting ");
+#if defined(WANT_MODULES)
+  Display::addItem("Load Modules");
+#endif
+#if defined(WANT_PROCFS)
+  Display::addItem("Mount ProcFS");
+#endif
+#if defined(WANT_SYSFS)
+  Display::addItem("Mount SysFS");
+#endif
+#if defined(WANT_MCFS)
+  Display::addItem("Mount MCFS");
+#endif
+  Display::addItem("Mount Root");
+  Display::addItem("Config Service");
+  Display::addItem("Executor Service");
 
-  m_have_procfs       = false;
-  m_have_mcfs         = false;
-  m_procfs_mountpoint = PROC_PATH;
-  m_mcfs_mountpoint   = MCFS_PATH;
+#if defined(WANT_MODULES)
+  Display::setItemState("Load Modules"    , "", "        ");
+#endif
+#if defined(WANT_PROCFS)
+  Display::setItemState("Mount ProcFS"    , "", "        ");
+#endif
+#if defined(WANT_SYSFS)
+  Display::setItemState("Mount SysFS"     , "", "        ");
+#endif
+#if defined(WANT_MCFS)
+  Display::setItemState("Mount MCFS"      , "", "        ");
+#endif
+#if defined(WANT_MOUNT_ROOT)
+  Display::setItemState("Mount Root"      , "", "        ");
+#endif
+  Display::setItemState("Config Service"  , "", "        ");
+  Display::setItemState("Executor Service", "", "        ");
+
+  //  export PATH=/sbin:/usr/sbin:/bin:/usr/bin
+
+  int procfs_rval = posix::error_response;
+  int sysfs_rval  = posix::error_response;
+  int mcfs_rval   = posix::error_response;
+
+#if defined(WANT_MOUNT_ROOT)
+  fsentry_t root_entry;
+# if defined(WANT_PROCFS)
+  ::mkdir(PROCFS_PATH, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
+  if(true || mount("proc", PROCFS_PATH, PROCFS_NAME, PROCFS_OPTIONS) == posix::success_response)
+  {
+    constexpr posix::size_t cmdlength = 0x2000; // 8KB
+    char cmdline[cmdlength + 1] = {0}; // 8KB + NUL char
+
+    posix::fd_t fd = posix::open(PROCFS_PATH "/cmdline", O_RDONLY);
+    posix::ssize_t count = posix::read(fd, cmdline, cmdlength);
+
+    std::string key;
+    std::string value;
+    key.reserve(cmdlength);
+    value.reserve(cmdlength);
+
+    for(char* pos = cmdline; *pos && pos < cmdline + count; ++pos)
+    {
+      key.clear();
+      value.clear();
+
+      while(*pos && std::isspace(*pos))
+        ++pos;
+
+      for(; *pos && pos < cmdline + cmdlength && std::isgraph(*pos) && *pos != '='; ++pos)
+        key.push_back(*pos);
+
+      if(*pos == '=')
+      {
+        for(++pos; *pos && pos < cmdline + cmdlength && std::isgraph(*pos); ++pos)
+          value.push_back(*pos);
+        boot_options.emplace(key, value);
+      }
+      else
+      {
+        switch (hash(key))
+        {
+          case "debug"_hash:
+            boot_options.emplace("debug", "yes");
+            break;
+          case "break"_hash:
+            boot_options.emplace("break", "premount");
+            break;
+          case "noresume"_hash:
+            boot_options.emplace("noresume", "premount");
+            break;
+          case "ro"_hash:
+            std::strcpy(root_entry.options, "ro");
+            break;
+          case "rw"_hash:
+            std::strcpy(root_entry.options, "rw");
+            break;
+          case "fastboot"_hash:
+            boot_options.emplace("fsck.mode", "skip");
+            break;
+          case "forcefsck"_hash:
+            boot_options.emplace("fsck.mode", "force");
+            break;
+          case "fsckfix"_hash:
+            boot_options.emplace("fsck.repair", "yes");
+            break;
+
+          default:
+            break;
+        }
+      }
+    }
+
+    blockdevices::init(PROCFS_PATH);
+    blockdevice_t* root_device = nullptr;
+    auto pos = boot_options.find("root");
+    if(pos != boot_options.end())
+    {
+      std::string::size_type offset = pos->second.find('=');
+      if(offset == std::string::npos) // not found
+        root_device = blockdevices::lookupByPath(pos->second.c_str());
+      else // found '='
+      {
+        std::string prefix = pos->second.substr(0, offset);
+        std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::toupper);
+        switch(hash(prefix))
+        {
+          case "UUID"_hash:
+            root_device = blockdevices::lookupByUUID(pos->second.substr(offset).c_str());
+            break;
+          case "LABEL"_hash:
+            root_device = blockdevices::lookupByPath(pos->second.substr(offset).c_str());
+            break;
+          default: // no idea what it is but try to find it
+            root_device = blockdevices::lookup(pos->second.substr(offset).c_str());
+            break;
+        }
+      }
+
+      if(root_device != nullptr)
+      {
+        std::strcpy(root_entry.device, root_device->path);
+        std::strcpy(root_entry.filesystems, root_device->fstype);
+      }
+    }
+
+    unmount(PROCFS_PATH);
+  }
+
+  ::mkdir("/newroot", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
+  mount(root_entry.device, "/newroot", root_entry.filesystems, root_entry.options);
+# endif
+#endif
 
   if(parse_fstab() == posix::success_response) // parse fstab
   {
@@ -121,57 +282,74 @@ void Initializer::start(void)
     {
       switch(hash(entry.device))
       {
-        case "proc"_hash: // if entry is for proc
-          m_have_procfs = true;
-          m_procfs_mountpoint = entry.path;
+#if defined(WANT_PROCFS)
+        case compiletime_hash(PROCFS_NAME, sizeof(PROCFS_NAME)): // if entry is for proc
+          ::mkdir(entry.path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
+          procfs_rval = mount(entry.device, entry.path, entry.filesystems, entry.options);
           break;
-
+#endif
+#if defined(WANT_SYSFS)
+        case "sysfs"_hash: // if entry is for sysfs
+          ::mkdir(entry.path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
+          sysfs_rval = mount(entry.device, entry.path, entry.filesystems, entry.options);
+          break;
+#endif
+#if defined(WANT_MCFS)
         case "mcfs"_hash: // if entry is for mcfs
-          m_have_mcfs = true;
-          m_mcfs_mountpoint = entry.path;
+          ::mkdir(entry.path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
+          mcfs_rval = mount(entry.device, entry.path, entry.filesystems, entry.options);
           break;
-
+#endif
         default:
           break;
       }
     }
 
 #if defined(WANT_PROCFS)
-    ::mkdir(m_procfs_mountpoint.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
-    if(!m_have_procfs) // no fstab entry for procfs!
-      g_fstab.emplace_back("proc", m_procfs_mountpoint.c_str(), "proc", "defaults");
-#endif
-
-    ::mkdir(m_mcfs_mountpoint.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
-    if(!m_have_mcfs) // no fstab entry for MCFS!
-      g_fstab.emplace_back("mcfs", m_mcfs_mountpoint.c_str(), "mcfs", "defaults");
-
-    for(fsentry_t& entry : g_fstab) // mount pure VFSes and local devices
+    if(procfs_rval != posix::success_response)
     {
-      int rval = posix::error_response;
-      if(entry.device == entry.filesystems || // pure VFS
-         entry.device.find_first_of(DEV_PATH "/") == 0) // block device
-        rval = mount(entry.device.c_str(),
-                     entry.path.c_str(),
-                     entry.filesystems.c_str(),
-                     entry.options.c_str());
-      if(entry.device == "mcfs") // for MCFS entries
-      {
-        if(rval == posix::success_response) // mounted MCFS with kernel driver
-        {
-          Display::setItemState("MCFS", terminal::style::brightGreen, " Passed ");
-#if defined(WANT_CONFIG_SERVICE)
-          Object::singleShot(start_config_service); // invoke config service
-#else
-          Object::singleShot(start_executor_service); // invoke executor service
-#endif
-        }
-        else // kernel driver failed/doesn't exist so try FUSE based MCFS
-        {
-          Object::singleShot(start_mcfs); // invoke FUSE based MCFS mount
-        }
-      }
+      ::mkdir(PROCFS_PATH, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
+      procfs_rval = mount("proc", PROCFS_PATH, PROCFS_NAME, PROCFS_OPTIONS);
     }
+
+    if(procfs_rval == posix::success_response)
+      Display::setItemState("Mount ProcFS", terminal::style::brightGreen, " Passed ");
+    else
+      Display::setItemState("Mount ProcFS", terminal::style::brightRed  , " Failed ");
+#endif
+
+#if defined(WANT_SYSFS)
+    if(sysfs_rval != posix::success_response)
+    {
+      ::mkdir(SYSFS_PATH, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
+      sysfs_rval = mount("sysfs", SYSFS_PATH, "sysfs", "defaults");
+    }
+
+    if(sysfs_rval == posix::success_response)
+      Display::setItemState("Mount SysFS", terminal::style::brightGreen, " Passed ");
+    else
+      Display::setItemState("Mount SysFS", terminal::style::brightRed  , " Failed ");
+#endif
+
+#if defined(WANT_MCFS)
+    if(mcfs_rval != posix::success_response)
+    {
+      ::mkdir(MCFS_PATH, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
+      mcfs_rval = mount("mcfs", MCFS_PATH, "mcfs", "defaults");
+    }
+
+    if(mcfs_rval == posix::success_response)
+    {
+      Display::setItemState("Mount MCFS", terminal::style::brightGreen, " Passed ");
+#if defined(WANT_CONFIG_SERVICE)
+      Object::singleShot(start_config_service);
+#else
+      Object::singleShot(start_executor_service);
+#endif
+    }
+    else
+      Object::singleShot(start_mcfs);
+#endif
   }
   else
   {
@@ -179,7 +357,7 @@ void Initializer::start(void)
   }
 }
 
-
+#if defined(WANT_MCFS)
 // MCFS
 void Initializer::restart_mcfs(posix::fd_t fd, EventData_t data)
 {
@@ -197,7 +375,7 @@ void Initializer::start_mcfs(void)
   if(m_procs.find(MCFS_BIN) != m_procs.end()) // if process exists
     return; // do not try to start it
 
-  Display::setItemState("MCFS", terminal::style::reset, "Starting");
+  Display::setItemState("Mount MCFS", terminal::style::reset, "Starting");
 
   Process& mcfs = m_procs[MCFS_BIN];
   if(mcfs.setArguments({MCFS_ARGS}) &&
@@ -212,15 +390,15 @@ void Initializer::test_mcfs(void) // waits for the mcfs to appear in the mount t
   {
     if(parse_mtab() == posix::success_response) // parsed ok
       for(auto pos = g_mtab.begin(); retries > 0 && pos != g_mtab.end(); ++pos) // iterate newly parsed mount table
-        if(pos->device == "mcfs" && pos->path == m_mcfs_mountpoint) // if mcfs is mounted
+        if(!std::strcmp(pos->device, "mcfs") && m_mcfs_mountpoint == pos->path) // if mcfs is mounted
           retries = INT_MIN + 1; // exit loop
     if(retries > 0)
-      Display::setItemState("MCFS", terminal::style::brightYellow, "Retrying");
+      Display::setItemState("Mount MCFS", terminal::style::brightYellow, "Retrying");
   }
 
   if(retries == INT_MIN) // if succeeded
   {
-    Display::setItemState("MCFS", terminal::style::brightGreen, " Passed ");
+    Display::setItemState("Mount MCFS", terminal::style::brightGreen, " Passed ");
 #if defined(WANT_CONFIG_SERVICE)
     Object::connect(m_procs[MCFS_BIN].finished, restart_mcfs); // restart FUSE MCFS if it exits
     Object::singleShot(start_config_service); // start config service
@@ -230,11 +408,12 @@ void Initializer::test_mcfs(void) // waits for the mcfs to appear in the mount t
   }
   else // if never succeeded
   {
-    Display::setItemState("MCFS", terminal::style::brightRed, " Failed ");
+    Display::setItemState("Mount MCFS", terminal::style::brightRed, " Failed ");
     Display::setItemState("Config Service", terminal::style::brightRed, "Canceled");
     Object::singleShot(start_executor_service); // config service will not work without mcfs, so skip it completely
   }
 }
+#endif
 
 // SXConfig
 #if defined(WANT_CONFIG_SERVICE)

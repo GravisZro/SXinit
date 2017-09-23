@@ -16,8 +16,15 @@ QMAKE_CXXFLAGS += -pipe -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics
 #DEFINES += GLOBAL_PROCESS_EVENT_TRACKING
 #DEFINES += ENABLE_UEVENT_TRACKING
 DEFINES += INTERRUPTED_WRAPPER
+
+linux:DEFINES += WANT_SYSFS
+linux:DEFINES += WANT_MOUNT_ROOT
+
+DEFINES += WANT_MODULES
 DEFINES += WANT_CONFIG_SERVICE
-DEFINES += WANT_PROCFS
+DEFINES += WANT_MCFS
+DEFINES += WANT_DEVICE_DETECT
+
 #LIBS += -lpthread
 
 PDTK = ../pdtk
@@ -37,7 +44,8 @@ SOURCES += \
     $$PDTK/specialized/eventbackend.cpp \
     $$PDTK/specialized/peercred.cpp \
     $$PDTK/specialized/proclist.cpp \
-    $$PDTK/specialized/mount.cpp
+    $$PDTK/specialized/mount.cpp \
+    $$PDTK/specialized/blockdevices.cpp
 
 HEADERS += \
     framebuffer.h \
@@ -62,6 +70,7 @@ HEADERS += \
     $$PDTK/specialized/procstat.h \
     $$PDTK/specialized/eventbackend.h \
     $$PDTK/specialized/mount.h \
+    $$PDTK/specialized/blockdevices.h \
     $$PDTK/specialized/peercred.h \
     $$PDTK/specialized/proclist.h \
     $$PDTK/socket.h

@@ -5,11 +5,12 @@
 #include "initializer.h"
 #include "display.h"
 
-int main(int argc, char *argv[])
+
+int main(void) // there are no arguments for an init system!
 {
-  (void)argc,(void)argv;
   Display::init();
   Application app;
   Initializer::start();
-  return app.exec(); // run then exit with generic error code
+  return 0;
+  //return app.exec(); // run then exit with generic error code
 }
