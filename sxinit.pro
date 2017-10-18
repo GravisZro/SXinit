@@ -17,15 +17,24 @@ QMAKE_CXXFLAGS += -pipe -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics
 #DEFINES += ENABLE_UEVENT_TRACKING
 DEFINES += INTERRUPTED_WRAPPER
 
-linux:DEFINES += WANT_SYSFS
 linux:DEFINES += WANT_MOUNT_ROOT
+linux:DEFINES += WANT_MODULES
+linux:DEFINES += WANT_SYSFS
 
-DEFINES += WANT_MODULES
 DEFINES += WANT_CONFIG_SERVICE
 DEFINES += WANT_MCFS
-DEFINES += WANT_DEVICE_DETECT
 
 #LIBS += -lpthread
+experimental {
+#QMAKE_CXXFLAGS += -stdlib=libc++
+QMAKE_CXXFLAGS += -nostdinc
+INCLUDEPATH += /usr/include/x86_64-linux-musl
+INCLUDEPATH += /usr/include/c++/v1
+INCLUDEPATH += /usr/include
+INCLUDEPATH += /usr/include/x86_64-linux-gnu
+QMAKE_LFLAGS += -L/usr/lib/x86_64-linux-musl -dynamic-linker /lib/ld-musl-x86_64.so.1
+LIBS += -lc++
+}
 
 PDTK = ../pdtk
 INCLUDEPATH += $$PDTK
@@ -45,7 +54,11 @@ SOURCES += \
     $$PDTK/specialized/peercred.cpp \
     $$PDTK/specialized/proclist.cpp \
     $$PDTK/specialized/mount.cpp \
-    $$PDTK/specialized/blockdevices.cpp
+    $$PDTK/specialized/blockdevices.cpp \
+    $$PDTK/specialized/module.cpp \
+    $$PDTK/specialized/FileEvent.cpp \
+    $$PDTK/specialized/PollEvent.cpp \
+    $$PDTK/specialized/ProcessEvent.cpp
 
 HEADERS += \
     framebuffer.h \
@@ -73,4 +86,8 @@ HEADERS += \
     $$PDTK/specialized/blockdevices.h \
     $$PDTK/specialized/peercred.h \
     $$PDTK/specialized/proclist.h \
-    $$PDTK/socket.h
+    $$PDTK/socket.h \
+    $$PDTK/specialized/module.h \
+    $$PDTK/specialized/FileEvent.h \
+    $$PDTK/specialized/PollEvent.h \
+    $$PDTK/specialized/ProcessEvent.h
