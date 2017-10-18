@@ -30,6 +30,8 @@ namespace Display
   constexpr posix::size_t maxRows = 10;
   constexpr posix::size_t maxColumns = 10;
 
+  static uint16_t screenRows = 0;
+  static uint16_t screenColumns = 0;
   static uint16_t offsetRows = 0;
   static uint16_t offsetColumns = 0;
   static std::map<const char*, std::pair<uint16_t, uint16_t>> itempos;
@@ -52,14 +54,12 @@ void Display::init(void) noexcept
     fb.open("/dev/fb0");
     fb.load(data, width, height);
 #else
-    uint16_t rows = 0;
-    uint16_t columns = 0;
-    terminal::getWindowSize(rows, columns);
+    terminal::getWindowSize(screenRows, screenColumns);
     terminal::setCursorPosition(1, 1);
     terminal::write(CSI "0;47;30m");// reset; white background; black foreground
-    for(uint16_t pos = 0; pos < columns;)
+    for(uint16_t pos = 0; pos < screenColumns;)
       pos += terminal::write(" ");
-    setText(1, (columns - sizeof("SYSTEM X")) / 2, "", "SYSTEM X"); // print in the middle of the line
+    setText(1, (screenColumns - sizeof("SYSTEM X")) / 2, "", "SYSTEM X"); // print in the middle of the line
     terminal::write(terminal::style::reset); // reset
 #endif
   }
@@ -152,4 +152,13 @@ bool Display::setItemState(const char* item, const char* style, const char* stat
   terminal::write(terminal::style::reset); // reset
   terminal::write("\n");
   return true;
+}
+
+void Display::bailoutLine(const char* fmt, const char* arg1, const char* arg2, const char* arg3)
+{
+  terminal::setCursorPosition(screenRows - 5, 0);
+  terminal::write("%s", terminal::critical);
+  terminal::write(fmt, arg1, arg2, arg3);
+  terminal::write(terminal::style::reset); // reset
+  terminal::write("\n");
 }

@@ -12,6 +12,8 @@ namespace Display
   extern bool addItem(const char* item) noexcept;
   extern bool setItem(const char* item, uint16_t row, uint16_t column) noexcept;
   extern bool setItemState(const char* item, const char* style, const char* state) noexcept;
+
+  extern void bailoutLine(const char* fmt, const char* arg1 = "", const char* arg2 = "", const char* arg3 = "") noexcept;
 }
 
 #endif // DISPLAY_H
