@@ -44,6 +44,9 @@ SOURCES       = main.cpp \
 	$(PDTK)/cxxutils/configmanip.cpp \
 	$(PDTK)/specialized/procstat.cpp \
 	$(PDTK)/specialized/eventbackend.cpp \
+	$(PDTK)/specialized/FileEvent.cpp \
+	$(PDTK)/specialized/PollEvent.cpp \
+	$(PDTK)/specialized/ProcessEvent.cpp \
 	$(PDTK)/specialized/peercred.cpp \
 	$(PDTK)/specialized/proclist.cpp \
 	$(PDTK)/specialized/mount.cpp
