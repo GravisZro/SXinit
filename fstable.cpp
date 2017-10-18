@@ -2,6 +2,7 @@
 
 // POSIX++
 #include <cstring>
+#include <cctype>
 
 // PDTK
 #include <cxxutils/posix_helpers.h>
