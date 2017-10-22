@@ -10,8 +10,6 @@
 std::list<struct fsentry_t> g_fstab;
 std::list<struct fsentry_t> g_mtab;
 
-#if defined(__unix__)
-
 fsentry_t::fsentry_t(void)
 {
   std::memset(this, 0, sizeof(fsentry_t));
@@ -127,10 +125,45 @@ int parse_table(std::list<struct fsentry_t>& table, const char* filename)
 int parse_fstab(void)
 { return parse_table(g_fstab, "/etc/fstab"); }
 
+
+#if defined(__linux__) /* Linux */
+
 int parse_mtab(void)
 { return parse_table(g_mtab, "/etc/mtab"); }
 
-#else
-#error Unsupported platform! >:(
-#endif
+#elif (defined(__APPLE__) && defined(__MACH__)) /* Darwin 7+     */ || \
+      defined(__FreeBSD__)                      /* FreeBSD 4.1+  */ || \
+      defined(__DragonFly__)                    /* DragonFly BSD */ || \
+      defined(__OpenBSD__)                      /* OpenBSD 2.9+  */ || \
+      defined(__NetBSD__)                       /* NetBSD 2+     */
 
+int parse_mtab(void)
+{
+  return 0;
+}
+
+#elif defined(__sun) && defined(__SVR4) // Solaris / OpenSolaris / OpenIndiana / illumos
+# error No filesystem table backend code exists in SXinit for Solaris / OpenSolaris / OpenIndiana / illumos!  Please submit a patch!
+
+#elif defined(__minix) // MINIX
+# error No filesystem table backend code exists in SXinit for MINIX!  Please submit a patch!
+
+#elif defined(__QNX__) // QNX
+// QNX docs: http://www.qnx.com/developers/docs/7.0.0/index.html#com.qnx.doc.neutrino.devctl/topic/about.html
+# error No filesystem table backend code exists in SXinit for QNX!  Please submit a patch!
+
+#elif defined(__hpux) // HP-UX
+# error No filesystem table backend code exists in SXinit for HP-UX!  Please submit a patch!
+
+#elif defined(_AIX) // IBM AIX
+# error No filesystem table backend code exists in SXinit for IBM AIX!  Please submit a patch!
+
+#elif defined(BSD)
+# error Unrecognized BSD derivative!
+
+#elif defined(__unix__) || defined(__unix)
+# error Unrecognized UNIX variant!
+
+#else
+# error This platform is not supported.
+#endif
