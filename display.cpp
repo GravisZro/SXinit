@@ -8,8 +8,8 @@
 #include <cstdio>
 
 // STL
-#include <vector>
 #include <map>
+#include <array>
 
 // PDTK
 #include <cxxutils/vterm.h>
@@ -38,7 +38,7 @@ namespace Display
   static std::array<std::array<const char*, maxRows>, maxColumns> items;
   static std::array<size_t, maxColumns> item_column_widths;
 
-  static uint16_t getColumnOffset(uint16_t column) noexcept
+  constexpr uint16_t getColumnOffset(uint16_t column) noexcept
     { return !column ? 0 : item_column_widths.at(column - 1) + 16 + getColumnOffset(column - 1); }
 }
 
