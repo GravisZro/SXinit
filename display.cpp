@@ -38,7 +38,7 @@ namespace Display
   static std::array<std::array<const char*, maxRows>, maxColumns> items;
   static std::array<size_t, maxColumns> item_column_widths;
 
-  constexpr uint16_t getColumnOffset(uint16_t column) noexcept
+  static uint16_t getColumnOffset(uint16_t column) noexcept
     { return !column ? 0 : item_column_widths.at(column - 1) + 16 + getColumnOffset(column - 1); }
 }
 
