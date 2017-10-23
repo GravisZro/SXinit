@@ -13,8 +13,6 @@ QMAKE_CXXFLAGS += -pipe -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics
 #QMAKE_CXXFLAGS += -fno-exceptions
 #QMAKE_CXXFLAGS += -fno-rtti
 #QMAKE_CXXFLAGS += -fno-threadsafe-statics
-#DEFINES += GLOBAL_PROCESS_EVENT_TRACKING
-#DEFINES += ENABLE_UEVENT_TRACKING
 DEFINES += INTERRUPTED_WRAPPER
 
 linux:DEFINES += WANT_MOUNT_ROOT
