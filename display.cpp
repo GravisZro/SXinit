@@ -36,7 +36,7 @@ namespace Display
   static uint16_t offsetColumns = 0;
   static std::map<const char*, std::pair<uint16_t, uint16_t>> itempos;
   static std::array<std::array<const char*, maxRows>, maxColumns> items;
-  static std::array<size_t, maxColumns> item_column_widths;
+  static std::array<uint16_t, maxColumns> item_column_widths;
 
   constexpr uint16_t getColumnOffset(uint16_t column) noexcept
     { return !column ? 0 : item_column_widths.at(column - 1) + 16 + getColumnOffset(column - 1); }
@@ -120,9 +120,11 @@ bool Display::setItem(const char* item, uint16_t row, uint16_t column) noexcept
   if(row >= maxRows || column == maxColumns)
     return false;
   size_t len = std::strlen(item);
-  size_t& current = item_column_widths.at(column);
+  if(len > UINT16_MAX)
+    return false;
+  uint16_t& current = item_column_widths.at(column);
   if(len > current)
-    current = len;
+    current = uint16_t(len);
 
   items.at(column).at(row) = item;
   return itempos.emplace(item, std::make_pair(row, column)).second;
@@ -154,7 +156,7 @@ bool Display::setItemState(const char* item, const char* style, const char* stat
   return true;
 }
 
-void Display::bailoutLine(const char* fmt, const char* arg1, const char* arg2, const char* arg3)
+void Display::bailoutLine(const char* fmt, const char* arg1, const char* arg2, const char* arg3) noexcept
 {
   terminal::setCursorPosition(screenRows - 5, 0);
   terminal::write("%s", terminal::critical);

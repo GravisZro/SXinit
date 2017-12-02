@@ -498,7 +498,7 @@ Initializer::State Initializer::mount_root(void) noexcept
             root_device = blockdevices::lookupByUUID(pos->second.substr(offset).c_str());
             break;
           case "LABEL"_hash: // found "root=LABEL=XXXXXXXX"
-            root_device = blockdevices::lookupByPath(pos->second.substr(offset).c_str());
+            root_device = blockdevices::lookupByLabel(pos->second.substr(offset).c_str());
             break;
           default: // found "root=???=XXXXXXXX" but try to find it anyway
             root_device = blockdevices::lookup(pos->second.substr(offset).c_str());
