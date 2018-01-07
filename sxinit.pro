@@ -46,6 +46,7 @@ SOURCES += \
     $$PDTK/application.cpp \
     $$PDTK/process.cpp \
     $$PDTK/socket.cpp \
+    $$PDTK/asyncfd.cpp \
     $$PDTK/cxxutils/configmanip.cpp \
     $$PDTK/specialized/procstat.cpp \
     $$PDTK/specialized/eventbackend.cpp \
@@ -64,9 +65,11 @@ HEADERS += \
     initializer.h \
     splash.h \
     display.h \
-    $$PDTK/application.h \
     $$PDTK/object.h \
+    $$PDTK/application.h \
     $$PDTK/process.h \
+    $$PDTK/socket.h \
+    $$PDTK/asyncfd.h \
     $$PDTK/cxxutils/vfifo.h \
     $$PDTK/cxxutils/posix_helpers.h \
     $$PDTK/cxxutils/error_helpers.h \
@@ -84,7 +87,6 @@ HEADERS += \
     $$PDTK/specialized/blockdevices.h \
     $$PDTK/specialized/peercred.h \
     $$PDTK/specialized/proclist.h \
-    $$PDTK/socket.h \
     $$PDTK/specialized/module.h \
     $$PDTK/specialized/FileEvent.h \
     $$PDTK/specialized/PollEvent.h \
