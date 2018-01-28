@@ -83,15 +83,15 @@
 #endif
 
 #ifndef MCFS_ARGS
-#define MCFS_ARGS           MCFS_BIN, MCFS_PATH, "-o", "allow_other"
+#define MCFS_ARGS           MCFS_BIN " " MCFS_PATH " -o allow_other"
 #endif
 
 #ifndef CONFIG_ARGS
-#define CONFIG_ARGS         CONFIG_BIN, "-f"
+#define CONFIG_ARGS         CONFIG_BIN " -f"
 #endif
 
 #ifndef EXECUTOR_ARGS
-#define EXECUTOR_ARGS       EXECUTOR_BIN, "-f"
+#define EXECUTOR_ARGS       EXECUTOR_BIN " -f"
 #endif
 
 #ifndef CONFIG_SOCKET
@@ -177,7 +177,7 @@ namespace Initializer
   {
     const char* step_id;
     const char* bin;
-    const std::vector<std::string> arguments;
+    const char* arguments;
     const char* username;
     std::function<bool()> test;
     bool fatal;
@@ -230,12 +230,12 @@ namespace Initializer
 
  std::list<daemon_data_t> daemons = {
 #if defined(WANT_MCFS)
-   { "Mount FUSE MCFS", MCFS_BIN, {MCFS_ARGS}, nullptr, test_mcfs, false },
+   { "Mount FUSE MCFS", MCFS_BIN, MCFS_ARGS, nullptr, test_mcfs, false },
 #endif
 #if defined(WANT_CONFIG_SERVICE)
-   { "Config Service", CONFIG_BIN, {CONFIG_ARGS}, CONFIG_USERNAME, test_config_service, false },
+   { "Config Service", CONFIG_BIN, CONFIG_ARGS, CONFIG_USERNAME, test_config_service, false },
 #endif
-   { "Executor Service", EXECUTOR_BIN, {EXECUTOR_ARGS}, EXECUTOR_USERNAME, test_executor_service, true },
+   { "Executor Service", EXECUTOR_BIN, EXECUTOR_ARGS, EXECUTOR_USERNAME, test_executor_service, true },
  };
 
 }
@@ -368,8 +368,8 @@ bool Initializer::start_daemon(daemon_data_t* data) noexcept
   setStepState(data->step_id, State::Starting);
   Process& proc = m_procs[data->bin]; // create process
   return
-      (data->arguments.empty() || proc.setArguments(data->arguments)) && // set arguments if they exist
-      (data->username == nullptr || proc.setUserID(posix::getuserid(data->username))) && // set username if provided
+      (data->arguments == nullptr || proc.setOption("/Process/Arguments", data->arguments)) && // set arguments if they exist
+      (data->username  == nullptr || proc.setOption("/Process/User", data->username)) && // set username if provided
       proc.invoke(); // invoke the process
 }
 
