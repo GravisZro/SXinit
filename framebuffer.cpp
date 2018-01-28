@@ -8,7 +8,6 @@
 // POSIX
 #include <sys/ioctl.h>
 #include <sys/mman.h>
-#include <fcntl.h>
 
 // PDTK
 #include <cxxutils/error_helpers.h>
