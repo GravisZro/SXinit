@@ -126,13 +126,13 @@ namespace Initializer
     Retrying,
   };
 
-  void addInitStep(const char* name, std::function<State()> function, bool fatal) noexcept;
+  void addInitStep(const char* name, Object::fslot_t<State> function, bool fatal) noexcept;
   void setStepState(const char* step_id, State state) noexcept;
 
   struct step_t
   {
     const char* name;
-    std::function<State()> function;
+    Object::fslot_t<State> function;
     bool fatal;
     bool have_result;
     State result;
@@ -163,13 +163,13 @@ namespace Initializer
 
   std::list<vfs_mount> vfses = {
 #if defined(WANT_PROCFS)
-    {"Mount ProcFS", posix::error_response, nullptr, { "proc", PROCFS_PATH, PROCFS_NAME, PROCFS_OPTIONS }, false },
+    { "Mount ProcFS", posix::error_response, nullptr, { "proc", PROCFS_PATH, PROCFS_NAME, PROCFS_OPTIONS }, false },
 #endif
 #if defined(WANT_SYSFS)
-    {"Mount SysFS", posix::error_response, nullptr, { "sysfs", SYSFS_PATH, "sysfs", "defaults" }, false },
+    { "Mount SysFS", posix::error_response, nullptr, { "sysfs", SYSFS_PATH, "sysfs", "defaults" }, false },
 #endif
 #if defined(WANT_MCFS)
-    {"Mount MCFS", posix::error_response, nullptr, { "mcfs", MCFS_PATH, "mcfs", "defaults" }, false },
+    { "Mount MCFS", posix::error_response, nullptr, { "mcfs", MCFS_PATH, "mcfs", "defaults" }, false },
 #endif
   };
 
@@ -179,7 +179,7 @@ namespace Initializer
     const char* bin;
     const char* arguments;
     const char* username;
-    std::function<bool()> test;
+    Object::fslot_t<bool> test;
     bool fatal;
   };
 
@@ -240,9 +240,9 @@ namespace Initializer
 
 }
 
-void Initializer::addInitStep(const char* name, std::function<State()> function, bool fatal) noexcept
+void Initializer::addInitStep(const char* name, Object::fslot_t<State> function, bool fatal) noexcept
 {
-  steps.emplace_back((step_t){ name, function, fatal, false, State::Clear });
+  steps.emplace_back(step_t{ name, function, fatal, false, State::Clear });
   Display::addItem(name);
 }
 
@@ -356,7 +356,8 @@ Initializer::State Initializer::daemon_run(daemon_data_t* data) noexcept
   }
 
   if(retries == INT_MIN) // if succeeded
-    Object::connect(m_procs[data->bin].finished, std::function<void(posix::fd_t)>([data](posix::fd_t){ restart_daemon(data); }));
+    Object::connect(m_procs[data->bin].finished,
+        Object::fslot_t<void, posix::fd_t>([data](posix::fd_t) noexcept { restart_daemon(data); }));
   return retries == INT_MIN ? State::Passed : State::Failed;
 }
 
@@ -433,7 +434,7 @@ Initializer::State Initializer::mount_root(void) noexcept
         ++pos;
 
       for(; *pos && pos < cmdline + cmdlength && std::isgraph(*pos) && *pos != '='; ++pos)
-        key.push_back(::tolower(*pos)); // options must be lowercase
+        key.push_back(char(::tolower(*pos))); // options must be lowercase
 
       if(*pos == '=')
       {
