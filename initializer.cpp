@@ -38,16 +38,16 @@
 #define CONFIG_SERVICE      "sxconfig"
 #endif
 
-#ifndef EXECUTOR_SERVICE
-#define EXECUTOR_SERVICE    "sxexecutor"
+#ifndef DIRECTOR_SERVICE
+#define DIRECTOR_SERVICE    "sxdirector"
 #endif
 
 #ifndef CONFIG_USERNAME
 #define CONFIG_USERNAME     "config"
 #endif
 
-#ifndef EXECUTOR_USERNAME
-#define EXECUTOR_USERNAME   "executor"
+#ifndef DIRECTOR_USERNAME
+#define DIRECTOR_USERNAME   "director"
 #endif
 
 #ifndef BIN_PATH
@@ -78,8 +78,8 @@
 #define CONFIG_BIN          SBIN_PATH "/" CONFIG_SERVICE
 #endif
 
-#ifndef EXECUTOR_BIN
-#define EXECUTOR_BIN        SBIN_PATH "/" EXECUTOR_SERVICE
+#ifndef DIRECTOR_BIN
+#define DIRECTOR_BIN        SBIN_PATH "/" DIRECTOR_SERVICE
 #endif
 
 #ifndef MCFS_ARGS
@@ -90,16 +90,16 @@
 #define CONFIG_ARGS         CONFIG_BIN " -f"
 #endif
 
-#ifndef EXECUTOR_ARGS
-#define EXECUTOR_ARGS       EXECUTOR_BIN " -f"
+#ifndef DIRECTOR_ARGS
+#define DIRECTOR_ARGS       DIRECTOR_BIN " -f"
 #endif
 
 #ifndef CONFIG_SOCKET
 #define CONFIG_SOCKET       "/" CONFIG_USERNAME "/io"
 #endif
 
-#ifndef EXECUTOR_SOCKET
-#define EXECUTOR_SOCKET     "/" EXECUTOR_USERNAME "/io"
+#ifndef DIRECTOR_SOCKET
+#define DIRECTOR_SOCKET     "/" DIRECTOR_USERNAME "/io"
 #endif
 
 #ifdef __linux__
@@ -199,12 +199,12 @@ namespace Initializer
   }
 #endif
 
-  // SXExecutor
-  char executor_socket_path[PATH_MAX] = { 0 };
-  bool test_executor_service(void) noexcept
+  // SXDirector
+  char director_socket_path[PATH_MAX] = { 0 };
+  bool test_director_service(void) noexcept
   {
     struct stat data;
-    return ::stat(executor_socket_path, &data) == posix::success_response && // stat file on VFS worked AND
+    return ::stat(director_socket_path, &data) == posix::success_response && // stat file on VFS worked AND
         data.st_mode & S_IFSOCK; // it's a socket file
   }
 
@@ -220,8 +220,8 @@ namespace Initializer
           std::strcpy(mcfs_mountpoint, pos->path);
           std::strcpy(config_socket_path, mcfs_mountpoint);
           std::strcat(config_socket_path, CONFIG_SOCKET);
-          std::strcpy(executor_socket_path, mcfs_mountpoint);
-          std::strcat(executor_socket_path, EXECUTOR_SOCKET);
+          std::strcpy(director_socket_path, mcfs_mountpoint);
+          std::strcat(director_socket_path, DIRECTOR_SOCKET);
           return true;
         }
     return false;
@@ -235,7 +235,7 @@ namespace Initializer
 #if defined(WANT_CONFIG_SERVICE)
    { "Config Service", CONFIG_BIN, CONFIG_ARGS, CONFIG_USERNAME, test_config_service, false },
 #endif
-   { "Executor Service", EXECUTOR_BIN, EXECUTOR_ARGS, EXECUTOR_USERNAME, test_executor_service, true },
+   { "Director Service", DIRECTOR_BIN, DIRECTOR_ARGS, DIRECTOR_USERNAME, test_director_service, true },
  };
 
 }
