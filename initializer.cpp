@@ -66,12 +66,12 @@
 #define DEVFS_PATH          "/dev"
 #endif
 
-#ifndef MCFS_PATH
-#define MCFS_PATH           "/mc"
+#ifndef SCFS_PATH
+#define SCFS_PATH           "/svc"
 #endif
 
-#ifndef MCFS_BIN
-#define MCFS_BIN            SBIN_PATH "/mcfs"
+#ifndef SCFS_BIN
+#define SCFS_BIN            SBIN_PATH "/svcfs"
 #endif
 
 #ifndef CONFIG_BIN
@@ -82,8 +82,8 @@
 #define DIRECTOR_BIN        SBIN_PATH "/" DIRECTOR_SERVICE
 #endif
 
-#ifndef MCFS_ARGS
-#define MCFS_ARGS           MCFS_BIN " " MCFS_PATH " -o allow_other"
+#ifndef SCFS_ARGS
+#define SCFS_ARGS           SCFS_BIN " " SCFS_PATH " -o allow_other"
 #endif
 
 #ifndef CONFIG_ARGS
@@ -168,8 +168,8 @@ namespace Initializer
 #if defined(WANT_SYSFS)
     { "Mount SysFS", posix::error_response, nullptr, { "sysfs", SYSFS_PATH, "sysfs", "defaults" }, false },
 #endif
-#if defined(WANT_MCFS)
-    { "Mount MCFS", posix::error_response, nullptr, { "mcfs", MCFS_PATH, "mcfs", "defaults" }, false },
+#if defined(WANT_SCFS)
+    { "Mount SCFS", posix::error_response, nullptr, { "mcfs", SCFS_PATH, "mcfs", "defaults" }, false },
 #endif
   };
 
@@ -208,8 +208,8 @@ namespace Initializer
         data.st_mode & S_IFSOCK; // it's a socket file
   }
 
-  // MCFS
-#if defined(WANT_MCFS)
+  // SCFS
+#if defined(WANT_SCFS)
   char mcfs_mountpoint[PATH_MAX] = { 0 };
   bool test_mcfs(void) noexcept
   {
@@ -229,8 +229,8 @@ namespace Initializer
 #endif
 
  std::list<daemon_data_t> daemons = {
-#if defined(WANT_MCFS)
-   { "Mount FUSE MCFS", MCFS_BIN, MCFS_ARGS, nullptr, test_mcfs, false },
+#if defined(WANT_SCFS)
+   { "Mount FUSE SCFS", SCFS_BIN, SCFS_ARGS, nullptr, test_mcfs, false },
 #endif
 #if defined(WANT_CONFIG_SERVICE)
    { "Config Service", CONFIG_BIN, CONFIG_ARGS, CONFIG_USERNAME, test_config_service, false },
