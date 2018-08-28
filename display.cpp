@@ -12,7 +12,6 @@
 #include <array>
 
 // PDTK
-#include <cxxutils/vterm.h>
 #include <cxxutils/hashing.h>
 
 // Project
@@ -34,7 +33,7 @@ namespace Display
   static uint16_t screenColumns = 0;
   static uint16_t offsetRows = 0;
   static uint16_t offsetColumns = 0;
-  static std::map<const char*, std::pair<uint16_t, uint16_t>> itempos;
+  static std::map<string_literal, std::pair<uint16_t, uint16_t>> itempos;
   static std::array<std::array<const char*, maxRows>, maxColumns> items;
   static std::array<uint16_t, maxColumns> item_column_widths;
 
@@ -58,8 +57,8 @@ void Display::init(void) noexcept
     terminal::setCursorPosition(1, 1);
     terminal::write(CSI "0;47;30m");// reset; white background; black foreground
     for(uint16_t pos = 0; pos < screenColumns;)
-      pos += terminal::write(" ");
-    setText(1, (screenColumns - sizeof("SYSTEM X")) / 2, "", "SYSTEM X"); // print in the middle of the line
+      pos += terminal::write(' ');
+    setText(1, (screenColumns - string_length("SYSTEM X")) / 2, "", "SYSTEM X"); // print in the middle of the line
     terminal::write(terminal::style::reset); // reset
 #endif
   }
@@ -70,11 +69,12 @@ void Display::init(void) noexcept
 }
 
 
-void Display::setText(uint16_t row, uint16_t column, const char* style, const char* text) noexcept
+void Display::setText(uint16_t row, uint16_t column, string_literal style, const char* text) noexcept
 {
   terminal::setCursorPosition(row, column);
-  terminal::write("%s%s", style, text);
-  terminal::write("\n");
+  terminal::write(style);
+  terminal::write(text);
+  terminal::write('\n');
 }
 
 void Display::clearItems(void) noexcept
@@ -96,7 +96,7 @@ bool Display::setItemsLocation(uint16_t row, uint16_t column) noexcept
   return true;
 }
 
-bool Display::addItem(const char* item) noexcept
+bool Display::addItem(string_literal item) noexcept
 {
   uint16_t column = 0;
   uint16_t row = 0;
@@ -115,7 +115,7 @@ bool Display::addItem(const char* item) noexcept
   return setItem(item, row, column);
 }
 
-bool Display::setItem(const char* item, uint16_t row, uint16_t column) noexcept
+bool Display::setItem(string_literal item, uint16_t row, uint16_t column) noexcept
 {
   if(row >= maxRows || column == maxColumns)
     return false;
@@ -130,7 +130,7 @@ bool Display::setItem(const char* item, uint16_t row, uint16_t column) noexcept
   return itempos.emplace(item, std::make_pair(row, column)).second;
 }
 
-bool Display::setItemState(const char* item, const char* style, const char* state) noexcept
+bool Display::setItemState(string_literal item, string_literal style, string_literal state) noexcept
 {
   auto pos = itempos.find(item);
   if(pos == itempos.end())
@@ -142,7 +142,12 @@ bool Display::setItemState(const char* item, const char* style, const char* stat
 
   terminal::setCursorPosition(rowpos, colpos);
   terminal::write(item);
-  colpos += item_column_widths.at(pos->second.second) + 2;
+
+  uint16_t col_width = item_column_widths.at(pos->second.second) + 2;
+  colpos += col_width;
+  while(col_width--)
+    terminal::write(' ');
+
 
   terminal::setCursorPosition(rowpos, colpos);
   terminal::write("[        ]");
@@ -152,15 +157,15 @@ bool Display::setItemState(const char* item, const char* style, const char* stat
   terminal::write(style);
   terminal::write(state);
   terminal::write(terminal::style::reset); // reset
-  terminal::write("\n");
+  terminal::write('\n');
   return true;
 }
 
-void Display::bailoutLine(const char* fmt, const char* arg1, const char* arg2, const char* arg3) noexcept
+void Display::bailoutLine(string_literal fmt, const char* arg1, const char* arg2, const char* arg3) noexcept
 {
   terminal::setCursorPosition(screenRows - 5, 0);
-  terminal::write("%s", terminal::critical);
+  terminal::write(terminal::critical);
   terminal::write(fmt, arg1, arg2, arg3);
   terminal::write(terminal::style::reset); // reset
-  terminal::write("\n");
+  terminal::write('\n');
 }

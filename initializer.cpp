@@ -114,7 +114,7 @@
 
 namespace Initializer
 {
-  std::unordered_map<const char*, Process> m_procs;
+  static std::unordered_map<const char*, Process> s_procs;
 
   enum class State
   {
@@ -126,18 +126,18 @@ namespace Initializer
     Retrying,
   };
 
-  void addInitStep(const char* name, Object::fslot_t<State> function, bool fatal) noexcept;
-  void setStepState(const char* step_id, State state) noexcept;
+  void addInitStep(string_literal name, Object::fslot_t<State> function, bool fatal) noexcept;
+  void setStepState(string_literal step_id, State state) noexcept;
 
   struct step_t
   {
-    const char* name;
+    string_literal name;
     Object::fslot_t<State> function;
     bool fatal;
     bool have_result;
     State result;
   };
-  std::list<step_t> steps;
+  static std::list<step_t> s_steps;
 
 #if defined(WANT_MOUNT_ROOT)
 # if defined(WANT_MODULES)
@@ -151,7 +151,7 @@ namespace Initializer
 
   struct vfs_mount
   {
-    const char* step_id;
+    string_literal step_id;
     int rval;
     fsentry_t* fstab_entry;
     fsentry_t defaults;
@@ -161,7 +161,7 @@ namespace Initializer
   State read_vfs_paths(void) noexcept;
   State mount_vfs(vfs_mount* vfs) noexcept;
 
-  std::list<vfs_mount> vfses = {
+  static std::list<vfs_mount> s_vfses = {
 #if defined(WANT_PROCFS)
     { "Mount ProcFS", posix::error_response, nullptr, { "proc", PROCFS_PATH, PROCFS_NAME, PROCFS_OPTIONS }, false },
 #endif
@@ -169,7 +169,7 @@ namespace Initializer
     { "Mount SysFS", posix::error_response, nullptr, { "sysfs", SYSFS_PATH, "sysfs", "defaults" }, false },
 #endif
 #if defined(WANT_SCFS)
-    { "Mount SCFS", posix::error_response, nullptr, { "mcfs", SCFS_PATH, "mcfs", "defaults" }, false },
+    { "Mount SCFS", posix::error_response, nullptr, { "scfs", SCFS_PATH, "scfs", "defaults" }, false },
 #endif
   };
 
@@ -190,7 +190,7 @@ namespace Initializer
 // TESTS
   // SXConfig
 #if defined(WANT_CONFIG_SERVICE)
-  char config_socket_path[PATH_MAX] = { 0 };
+  static char config_socket_path[PATH_MAX] = { 0 };
   bool test_config_service(void) noexcept
   {
     struct stat data;
@@ -200,7 +200,7 @@ namespace Initializer
 #endif
 
   // SXDirector
-  char director_socket_path[PATH_MAX] = { 0 };
+  static char director_socket_path[PATH_MAX] = { 0 };
   bool test_director_service(void) noexcept
   {
     struct stat data;
@@ -210,17 +210,17 @@ namespace Initializer
 
   // SCFS
 #if defined(WANT_SCFS)
-  char mcfs_mountpoint[PATH_MAX] = { 0 };
-  bool test_mcfs(void) noexcept
+  char scfs_mountpoint[PATH_MAX] = { 0 };
+  bool test_scfs(void) noexcept
   {
     if(parse_mtab() == posix::success_response) // parsed ok
       for(auto pos = g_mtab.begin(); pos != g_mtab.end(); ++pos) // iterate newly parsed mount table
-        if(!std::strcmp(pos->device, "mcfs")) // if mcfs is mounted
+        if(!std::strcmp(pos->device, "scfs")) // if scfs is mounted
         {
-          std::strcpy(mcfs_mountpoint, pos->path);
-          std::strcpy(config_socket_path, mcfs_mountpoint);
+          std::strcpy(scfs_mountpoint, pos->path);
+          std::strcpy(config_socket_path, scfs_mountpoint);
           std::strcat(config_socket_path, CONFIG_SOCKET);
-          std::strcpy(director_socket_path, mcfs_mountpoint);
+          std::strcpy(director_socket_path, scfs_mountpoint);
           std::strcat(director_socket_path, DIRECTOR_SOCKET);
           return true;
         }
@@ -228,9 +228,9 @@ namespace Initializer
   }
 #endif
 
- std::list<daemon_data_t> daemons = {
+ static std::list<daemon_data_t> s_daemons = {
 #if defined(WANT_SCFS)
-   { "Mount FUSE SCFS", SCFS_BIN, SCFS_ARGS, nullptr, test_mcfs, false },
+   { "Mount FUSE SCFS", SCFS_BIN, SCFS_ARGS, nullptr, test_scfs, false },
 #endif
 #if defined(WANT_CONFIG_SERVICE)
    { "Config Service", CONFIG_BIN, CONFIG_ARGS, CONFIG_USERNAME, test_config_service, false },
@@ -240,39 +240,38 @@ namespace Initializer
 
 }
 
-void Initializer::addInitStep(const char* name, Object::fslot_t<State> function, bool fatal) noexcept
+void Initializer::addInitStep(string_literal name, Object::fslot_t<State> function, bool fatal) noexcept
 {
-  steps.emplace_back(step_t{ name, function, fatal, false, State::Clear });
+  s_steps.emplace_back(step_t{ name, function, fatal, false, State::Clear });
   Display::addItem(name);
 }
 
-void Initializer::setStepState(const char* step_id, State state) noexcept
+void Initializer::setStepState(string_literal step_id, State state) noexcept
 {
   switch(state)
   {
-    case State::Clear:
-      Display::setItemState(step_id, terminal::style::reset       , "        ");
-      break;
-    case State::Starting:
-      Display::setItemState(step_id, terminal::style::reset       , "Starting");
-      break;
-    case State::Passed:
-      Display::setItemState(step_id, terminal::style::brightGreen , " Passed ");
-      break;
-    case State::Failed:
-      Display::setItemState(step_id, terminal::style::brightRed   , " Failed ");
-      break;
-    case State::Canceled:
-      Display::setItemState(step_id, terminal::style::brightYellow, "Canceled");
-      break;
-    case State::Retrying:
-      Display::setItemState(step_id, terminal::style::brightYellow, "Retrying");
-      break;
+    case State::Clear:    Display::setItemState(step_id, terminal::style::reset       , "        "); break;
+    case State::Starting: Display::setItemState(step_id, terminal::style::brightWhite , "Starting"); break;
+    case State::Passed:   Display::setItemState(step_id, terminal::style::brightGreen , " Passed "); break;
+    case State::Failed:   Display::setItemState(step_id, terminal::style::brightRed   , " Failed "); break;
+    case State::Canceled: Display::setItemState(step_id, terminal::style::brightYellow, "Canceled"); break;
+    case State::Retrying: Display::setItemState(step_id, terminal::style::brightYellow, "Retrying"); break;
   }
 }
 
 void Initializer::start(void) noexcept
 {
+  enum {
+    Read = 0,
+    Write = 1,
+  };
+
+  posix::fd_t stderr_pipe[2];
+
+  if(!posix::pipe(stderr_pipe) ||
+     !posix::dup2(stderr_pipe[Write], STDERR_FILENO))
+    terminal::write("%s Unable to redirect stderr: %s", terminal::warning, std::strerror(errno));
+
   Display::clearItems();
   Display::setItemsLocation(5, 1);
 
@@ -282,20 +281,20 @@ void Initializer::start(void) noexcept
 # endif
   addInitStep("Mount Root", mount_root, false);
 #endif
-  if(!vfses.empty()) // being empty is unlikely but possible
+  if(!s_vfses.empty()) // being empty is unlikely but possible
   {
-    addInitStep("Find mountpoints", read_vfs_paths, false);
-    for(vfs_mount& vfs : vfses)
+    addInitStep("Find Mount Points", read_vfs_paths, false);
+    for(vfs_mount& vfs : s_vfses)
       addInitStep(vfs.step_id, [&vfs]() { return mount_vfs(&vfs); }, vfs.fatal);
   }
 
-  for(daemon_data_t& daemon : daemons)
+  for(daemon_data_t& daemon : s_daemons)
     addInitStep(daemon.step_id, [&daemon]() noexcept { return daemon_run(&daemon); }, daemon.fatal);
 
-  for(auto& step : steps)
+  for(auto& step : s_steps)
     setStepState(step.name, step.result);
 
-  for(auto& step : steps)
+  for(auto& step : s_steps)
   {
     if(!step.have_result || step.result == State::Failed)
     {
@@ -315,7 +314,7 @@ Initializer::State Initializer::read_vfs_paths(void) noexcept
   if(parse_fstab() == posix::success_response) // parse fstab
   {
     for(fsentry_t& entry : g_fstab) // iterate all fstab entries
-      for(vfs_mount& vfs : vfses) // iterate all vfses we want
+      for(vfs_mount& vfs : s_vfses) // iterate all vfses we want
         if(!std::strcmp(entry.device, vfs.defaults.device)) // if the fstab entry is the vfs we want
           vfs.fstab_entry = &entry; // copy a pointer to the entry
     return State::Passed;
@@ -356,18 +355,18 @@ Initializer::State Initializer::daemon_run(daemon_data_t* data) noexcept
   }
 
   if(retries == INT_MIN) // if succeeded
-    Object::connect(m_procs[data->bin].finished,
+    Object::connect(s_procs[data->bin].finished,
         Object::fslot_t<void, posix::fd_t>([data](posix::fd_t) noexcept { restart_daemon(data); }));
   return retries == INT_MIN ? State::Passed : State::Failed;
 }
 
 bool Initializer::start_daemon(daemon_data_t* data) noexcept
 {
-  if(m_procs.find(data->bin) != m_procs.end()) // if process exists
+  if(s_procs.find(data->bin) != s_procs.end()) // if process exists
     return false; // do not try to start it
 
   setStepState(data->step_id, State::Starting);
-  Process& proc = m_procs[data->bin]; // create process
+  Process& proc = s_procs[data->bin]; // create process
   return
       (data->arguments == nullptr || proc.setOption("/Process/Arguments", data->arguments)) && // set arguments if they exist
       (data->username  == nullptr || proc.setOption("/Process/User", data->username)) && // set username if provided
@@ -376,9 +375,9 @@ bool Initializer::start_daemon(daemon_data_t* data) noexcept
 
 void Initializer::restart_daemon(daemon_data_t* data) noexcept
 {
-  if(m_procs.find(data->bin) != m_procs.end()) // if process existed once
+  if(s_procs.find(data->bin) != s_procs.end()) // if process existed once
   {
-    m_procs.erase(data->bin); // erase old process entry
+    s_procs.erase(data->bin); // erase old process entry
     ::sleep(1); // safety delay
   }
   start_daemon(data);
@@ -396,6 +395,8 @@ Initializer::State Initializer::load_modules(void) noexcept
     Display::bailoutLine("Unable to open list of modules to load: %s", std::strerror(errno));
     return State::Failed;
   }
+
+  // TODO
 
   if(false)
   {
