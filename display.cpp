@@ -64,8 +64,6 @@ void Display::init(void) noexcept
   }
   else
     setText(1, 1, terminal::severe, "System X Initializer is intended to be directly invoked by the kernel.");
-
-  setItemsLocation(10, 4);
 }
 
 
@@ -163,7 +161,7 @@ bool Display::setItemState(string_literal item, string_literal style, string_lit
 
 void Display::bailoutLine(string_literal fmt, const char* arg1, const char* arg2, const char* arg3) noexcept
 {
-  terminal::setCursorPosition(screenRows - 5, 0);
+  terminal::setCursorPosition(screenRows - 1, 0);
   terminal::write(terminal::critical);
   terminal::write(fmt, arg1, arg2, arg3);
   terminal::write(terminal::style::reset); // reset

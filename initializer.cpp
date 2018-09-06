@@ -168,7 +168,7 @@ namespace Initializer
 #if defined(WANT_SYSFS)
     { "Mount SysFS", posix::error_response, nullptr, { "sysfs", SYSFS_PATH, "sysfs", "defaults" }, false },
 #endif
-#if defined(WANT_SCFS)
+#if defined(WANT_NATIVE_SCFS)
     { "Mount SCFS", posix::error_response, nullptr, { "scfs", SCFS_PATH, "scfs", "defaults" }, false },
 #endif
   };
@@ -209,7 +209,7 @@ namespace Initializer
   }
 
   // SCFS
-#if defined(WANT_SCFS)
+#if defined(WANT_FUSE_SCFS)
   char scfs_mountpoint[PATH_MAX] = { 0 };
   bool test_scfs(void) noexcept
   {
@@ -229,7 +229,7 @@ namespace Initializer
 #endif
 
  static std::list<daemon_data_t> s_daemons = {
-#if defined(WANT_SCFS)
+#if defined(WANT_FUSE_SCFS)
    { "Mount FUSE SCFS", SCFS_BIN, SCFS_ARGS, nullptr, test_scfs, false },
 #endif
 #if defined(WANT_CONFIG_SERVICE)
@@ -254,7 +254,7 @@ void Initializer::setStepState(string_literal step_id, State state) noexcept
     case State::Starting: Display::setItemState(step_id, terminal::style::brightWhite , "Starting"); break;
     case State::Passed:   Display::setItemState(step_id, terminal::style::brightGreen , " Passed "); break;
     case State::Failed:   Display::setItemState(step_id, terminal::style::brightRed   , " Failed "); break;
-    case State::Canceled: Display::setItemState(step_id, terminal::style::brightYellow, "Canceled"); break;
+    case State::Canceled: Display::setItemState(step_id, terminal::style::reset       , "Canceled"); break;
     case State::Retrying: Display::setItemState(step_id, terminal::style::brightYellow, "Retrying"); break;
   }
 }
@@ -273,7 +273,7 @@ void Initializer::start(void) noexcept
     terminal::write("%s Unable to redirect stderr: %s", terminal::warning, std::strerror(errno));
 
   Display::clearItems();
-  Display::setItemsLocation(5, 1);
+  Display::setItemsLocation(3, 1);
 
 #if defined(WANT_MOUNT_ROOT)
 # if defined(WANT_MODULES)
@@ -285,7 +285,7 @@ void Initializer::start(void) noexcept
   {
     addInitStep("Find Mount Points", read_vfs_paths, false);
     for(vfs_mount& vfs : s_vfses)
-      addInitStep(vfs.step_id, [&vfs]() { return mount_vfs(&vfs); }, vfs.fatal);
+      addInitStep(vfs.step_id, [&vfs]() noexcept { return mount_vfs(&vfs); }, vfs.fatal);
   }
 
   for(daemon_data_t& daemon : s_daemons)
@@ -355,8 +355,12 @@ Initializer::State Initializer::daemon_run(daemon_data_t* data) noexcept
   }
 
   if(retries == INT_MIN) // if succeeded
+  {
     Object::connect(s_procs[data->bin].finished,
-        Object::fslot_t<void, posix::fd_t>([data](posix::fd_t) noexcept { restart_daemon(data); }));
+        Object::fslot_t<void, pid_t, posix::error_t>([data](pid_t pid, posix::error_t errnum) noexcept { restart_daemon(data); }));
+    Object::connect(s_procs[data->bin].killed,
+        Object::fslot_t<void, pid_t, posix::signal::EId>([data](pid_t pid, posix::signal::EId sig_id) noexcept { restart_daemon(data); }));
+  }
   return retries == INT_MIN ? State::Passed : State::Failed;
 }
 
@@ -550,7 +554,7 @@ void Initializer::run_emergency_shell(void) noexcept
   uint16_t rows = 0;
   uint16_t columns = 0;
   terminal::getWindowSize(rows, columns);
-  terminal::setCursorPosition(rows - 10, 0);
+  terminal::setCursorPosition(rows - 5, 0);
   terminal::write("Starting rescue shell\n");
   terminal::showCursor();
 }

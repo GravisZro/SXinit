@@ -8,8 +8,8 @@ struct fsentry_t
 {
   char device[PATH_MAX];
   char path[PATH_MAX];
-  char filesystems[2048];
-  char options[4096];
+  char filesystems[0x0800];
+  char options[0x1000];
   char dump_frequency;
   char pass;
 
