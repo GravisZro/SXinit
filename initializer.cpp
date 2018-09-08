@@ -15,7 +15,7 @@
 
 // PDTK
 #include <object.h>
-#include <process.h>
+#include <childprocess.h>
 #include <cxxutils/hashing.h>
 #include <specialized/mount.h>
 
@@ -114,7 +114,7 @@
 
 namespace Initializer
 {
-  static std::unordered_map<const char*, Process> s_procs;
+  static std::unordered_map<const char*, ChildProcess> s_procs;
 
   enum class State
   {
@@ -370,7 +370,7 @@ bool Initializer::start_daemon(daemon_data_t* data) noexcept
     return false; // do not try to start it
 
   setStepState(data->step_id, State::Starting);
-  Process& proc = s_procs[data->bin]; // create process
+  ChildProcess& proc = s_procs[data->bin]; // create process
   return
       (data->arguments == nullptr || proc.setOption("/Process/Arguments", data->arguments)) && // set arguments if they exist
       (data->username  == nullptr || proc.setOption("/Process/User", data->username)) && // set username if provided

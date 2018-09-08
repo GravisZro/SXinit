@@ -43,7 +43,7 @@ SOURCES += \
     initializer.cpp \
     display.cpp \
     $$PDTK/application.cpp \
-    $$PDTK/process.cpp \
+    $$PDTK/childprocess.cpp \
     $$PDTK/socket.cpp \
     $$PDTK/asyncfd.cpp \
     $$PDTK/cxxutils/configmanip.cpp \
@@ -66,7 +66,7 @@ HEADERS += \
     display.h \
     $$PDTK/object.h \
     $$PDTK/application.h \
-    $$PDTK/process.h \
+    $$PDTK/childprocess.h \
     $$PDTK/socket.h \
     $$PDTK/asyncfd.h \
     $$PDTK/cxxutils/vfifo.h \
