@@ -3,8 +3,8 @@ CONFIG -= qt
 CONFIG += c++14
 
 # FOR CLANG
-#QMAKE_CXXFLAGS += -stdlib=libc++
-#QMAKE_LFLAGS += -stdlib=libc++
+QMAKE_CXXFLAGS += -stdlib=libc++
+QMAKE_LFLAGS += -stdlib=libc++
 
 # universal arguments
 QMAKE_CXXFLAGS += -std=c++14
@@ -15,17 +15,16 @@ QMAKE_CXXFLAGS += -pipe -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics
 #QMAKE_CXXFLAGS += -fno-threadsafe-statics
 DEFINES += INTERRUPTED_WRAPPER
 
-linux:DEFINES += WANT_MOUNT_ROOT
-linux:DEFINES += WANT_MODULES
+DEFINES += WANT_MOUNT_ROOT
+DEFINES += WANT_MODULES
 linux:DEFINES += WANT_SYSFS
+DEFINES += WANT_NATIVE_SCFS
 
 DEFINES += WANT_CONFIG_SERVICE
-DEFINES += WANT_MCFS
+DEFINES += WANT_FUSE_SCFS
 
 #LIBS += -lpthread
 experimental {
-#QMAKE_CXXFLAGS += -stdlib=libc++
-QMAKE_CXXFLAGS += -nostdinc
 INCLUDEPATH += /usr/include/x86_64-linux-musl
 INCLUDEPATH += /usr/include/c++/v1
 INCLUDEPATH += /usr/include
