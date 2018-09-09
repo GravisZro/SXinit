@@ -420,7 +420,7 @@ Initializer::State Initializer::mount_root(void) noexcept
   if(mount("proc", PROCFS_PATH, PROCFS_NAME, PROCFS_OPTIONS) == posix::success_response) // temporarily mount procfs
   {
     constexpr posix::size_t cmdlength = 0x2000; // 8KB
-    char cmdline[cmdlength + 1] = {0}; // 8KB + NUL char
+    char cmdline[cmdlength + 1] = { 0 }; // 8KB + NUL char
 
     posix::fd_t fd = posix::open(PROCFS_PATH "/cmdline", O_RDONLY); // read /proc/cmdline so we can read boot options
     posix::ssize_t count = posix::read(fd, cmdline, cmdlength);
