@@ -1,18 +1,25 @@
 TEMPLATE = app
 CONFIG -= qt
-CONFIG += c++14
+CONFIG -= c++11
+CONFIG -= c++14
 
 # FOR CLANG
-QMAKE_CXXFLAGS += -stdlib=libc++
-QMAKE_LFLAGS += -stdlib=libc++
+#QMAKE_CXXFLAGS += -stdlib=libc++
+#QMAKE_LFLAGS += -stdlib=libc++
 
 # universal arguments
 QMAKE_CXXFLAGS += -std=c++14
-QMAKE_CXXFLAGS += -pipe -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics
-#QMAKE_CXXFLAGS += -pipe -Os
-#QMAKE_CXXFLAGS += -fno-exceptions
-#QMAKE_CXXFLAGS += -fno-rtti
-#QMAKE_CXXFLAGS += -fno-threadsafe-statics
+QMAKE_CXXFLAGS += -pipe -Os
+QMAKE_CXXFLAGS += -fno-exceptions
+QMAKE_CXXFLAGS += -fno-rtti
+QMAKE_CXXFLAGS += -fno-threadsafe-statics
+
+# optimizations
+QMAKE_CXXFLAGS += -fdata-sections
+QMAKE_CXXFLAGS += -ffunction-sections
+QMAKE_LFLAGS += -Wl,--gc-sections
+
+# defines
 DEFINES += INTERRUPTED_WRAPPER
 
 DEFINES += WANT_MOUNT_ROOT
