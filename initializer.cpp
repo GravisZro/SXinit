@@ -1,5 +1,11 @@
 #include "initializer.h"
 
+// safegaurds
+#if !defined(WANT_MOUNT_ROOT) && defined(WANT_MODULES)
+#pragma message("Modules loaded by the init system are expressly for mounting root.  Not enabling Module loading.")
+#undef WANT_MODULES
+#endif
+
 // POSIX
 #include <sys/stat.h>
 
@@ -19,15 +25,12 @@
 #include <cxxutils/hashing.h>
 #include <specialized/mount.h>
 
-#if defined(WANT_MOUNT_ROOT)
-# include <specialized/blockdevices.h>
-# if defined(WANT_MODULES)
-#  include <specialized/module.h>
-# endif
+#if defined(WANT_MODULES)
+# include <specialized/module.h>
 #endif
 
-#if !defined(WANT_MOUNT_ROOT) && defined(WANT_MODULES)
-#pragma message("Modules loaded by the init system are expressly for mounting root.  Not enabling Module loading.")
+#if defined(WANT_MOUNT_ROOT)
+# include <specialized/blockdevices.h>
 #endif
 
 // Project
@@ -139,11 +142,11 @@ namespace Initializer
   };
   static std::list<step_t> s_steps;
 
-#if defined(WANT_MOUNT_ROOT)
-# if defined(WANT_MODULES)
+#if defined(WANT_MODULES)
   State load_modules(void) noexcept;
-# endif
+#endif
 
+#if defined(WANT_MOUNT_ROOT)
   static fsentry_t root_entry;
   static std::map<std::string, std::string> boot_options;
   State mount_root(void) noexcept;
@@ -275,12 +278,13 @@ void Initializer::start(void) noexcept
   Display::clearItems();
   Display::setItemsLocation(3, 1);
 
-#if defined(WANT_MOUNT_ROOT)
-# if defined(WANT_MODULES)
+#if defined(WANT_MODULES)
   addInitStep("Load Modules", load_modules, false);
-# endif
+#endif
+#if defined(WANT_MOUNT_ROOT)
   addInitStep("Mount Root", mount_root, false);
 #endif
+
   if(!s_vfses.empty()) // being empty is unlikely but possible
   {
     addInitStep("Find Mount Points", read_vfs_paths, false);
@@ -388,8 +392,7 @@ void Initializer::restart_daemon(daemon_data_t* data) noexcept
 }
 
 
-#if defined(WANT_MOUNT_ROOT)
-# if defined(WANT_MODULES)
+#if defined(WANT_MODULES)
 Initializer::State Initializer::load_modules(void) noexcept
 {
   posix::fd_t fd = posix::open("/modules/modules.list", O_RDONLY);
@@ -410,8 +413,9 @@ Initializer::State Initializer::load_modules(void) noexcept
   return State::Passed;
 }
 
-# endif
+#endif
 
+#if defined(WANT_MOUNT_ROOT)
 Initializer::State Initializer::mount_root(void) noexcept
 {
   fsentry_t root_entry;
