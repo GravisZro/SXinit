@@ -6,6 +6,8 @@ CONFIG -= c++14
 # FOR CLANG
 #QMAKE_CXXFLAGS += -stdlib=libc++
 #QMAKE_LFLAGS += -stdlib=libc++
+#QMAKE_CXXFLAGS += -fsanitize=address
+#QMAKE_CXXFLAGS += -fsanitize=bounds
 
 # universal arguments
 QMAKE_CXXFLAGS += -std=c++14
@@ -13,6 +15,9 @@ QMAKE_CXXFLAGS += -pipe -Os
 QMAKE_CXXFLAGS += -fno-exceptions
 QMAKE_CXXFLAGS += -fno-rtti
 QMAKE_CXXFLAGS += -fno-threadsafe-statics
+QMAKE_CXXFLAGS += -fno-asynchronous-unwind-tables
+#QMAKE_CXXFLAGS += -fstack-protector-all
+QMAKE_CXXFLAGS += -fstack-protector-strong
 
 # optimizations
 QMAKE_CXXFLAGS += -fdata-sections
