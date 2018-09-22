@@ -220,10 +220,10 @@ namespace Initializer
       for(auto pos = g_mtab.begin(); pos != g_mtab.end(); ++pos) // iterate newly parsed mount table
         if(!std::strcmp(pos->device, "scfs")) // if scfs is mounted
         {
-          std::strcpy(scfs_mountpoint, pos->path);
-          std::strcpy(config_socket_path, scfs_mountpoint);
+          std::strncpy(scfs_mountpoint, pos->path, sizeof(scfs_mountpoint));
+          std::strncpy(config_socket_path, scfs_mountpoint, sizeof(config_socket_path) - sizeof(CONFIG_SOCKET));
           std::strcat(config_socket_path, CONFIG_SOCKET);
-          std::strcpy(director_socket_path, scfs_mountpoint);
+          std::strncpy(director_socket_path, scfs_mountpoint, sizeof(director_socket_path) - sizeof(DIRECTOR_SOCKET));
           std::strcat(director_socket_path, DIRECTOR_SOCKET);
           return true;
         }
@@ -465,10 +465,10 @@ Initializer::State Initializer::mount_root(void) noexcept
             boot_options.emplace("noresume", "premount");
             break;
           case "ro"_hash:
-            std::strcpy(root_entry.options, "ro");
+            std::strncpy(root_entry.options, "ro", sizeof(fsentry_t::options));
             break;
           case "rw"_hash:
-            std::strcpy(root_entry.options, "rw");
+            std::strncpy(root_entry.options, "rw", sizeof(fsentry_t::options));
             break;
           case "fastboot"_hash:
             boot_options.emplace("fsck.mode", "skip");
@@ -518,8 +518,8 @@ Initializer::State Initializer::mount_root(void) noexcept
 
       if(root_device != nullptr) // found a device
       {
-        std::strcpy(root_entry.device, root_device->path); // copy over data
-        std::strcpy(root_entry.filesystems, root_device->fstype);
+        std::strncpy(root_entry.device, root_device->path, sizeof(fsentry_t::device)); // copy over data
+        std::strncpy(root_entry.filesystems, root_device->fstype, sizeof(fsentry_t::filesystems));
       }
       else
       {
