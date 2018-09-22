@@ -13,20 +13,20 @@ struct fsentry_t
   char dump_frequency;
   char pass;
 
-  fsentry_t(void);
+  fsentry_t(void) noexcept;
   fsentry_t(const char* _device,
             const char* _path,
             const char* _filesystems,
             const char* _options        = "defaults",
             const char* _dump_frequency = "0",
-            const char* _pass           = "0");
+            const char* _pass           = "0") noexcept;
 };
 
 
-int parse_table(std::list<struct fsentry_t>& table, const char* filename);
+int parse_table(std::list<struct fsentry_t>& table, const char* filename) noexcept;
 
-int parse_fstab(void);
-int parse_mtab(void);
+int parse_fstab(void) noexcept;
+int parse_mtab(void) noexcept;
 
 extern std::list<struct fsentry_t> g_fstab;
 extern std::list<struct fsentry_t> g_mtab;

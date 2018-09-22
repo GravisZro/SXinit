@@ -10,7 +10,7 @@
 std::list<struct fsentry_t> g_fstab;
 std::list<struct fsentry_t> g_mtab;
 
-fsentry_t::fsentry_t(void)
+fsentry_t::fsentry_t(void) noexcept
 {
   std::memset(this, 0, sizeof(fsentry_t));
 }
@@ -20,24 +20,41 @@ fsentry_t::fsentry_t(const char* _device,
                      const char* _filesystems,
                      const char* _options,
                      const char* _dump_frequency,
-                     const char* _pass)
+                     const char* _pass) noexcept
 {
-  if(std::strlen(_device) < sizeof(fsentry_t::device))
-    std::strcpy(device, _device);
-  if(std::strlen(_path) < sizeof(fsentry_t::path))
-    std::strcpy(path, _path);
-  if(std::strlen(_filesystems) < sizeof(fsentry_t::filesystems))
-    std::strcpy(filesystems, _filesystems);
-  if(std::strlen(_options) < sizeof(fsentry_t::options))
-    std::strcpy(options, _options);
+  std::strncpy(device     , _device     , sizeof(fsentry_t::device      ));
+  std::strncpy(path       , _path       , sizeof(fsentry_t::path        ));
+  std::strncpy(filesystems, _filesystems, sizeof(fsentry_t::filesystems ));
+  std::strncpy(options    , _options    , sizeof(fsentry_t::options     ));
+
   if(std::strlen(_dump_frequency) == 1)
     dump_frequency = _dump_frequency[0];
+
   if(std::strlen(_pass) == 1)
     pass = _pass[0];
 }
 
+static char* skip_spaces(char* data) noexcept
+{
+  while(*data && std::isspace(*data))
+    ++data;
+  return data;
+}
 
-int parse_table(std::list<struct fsentry_t>& table, const char* filename)
+template<size_t sz>
+static char* read_field(char* pos, char* destination) noexcept
+{
+  char* field = destination;
+  char* begin = destination;
+  while(*pos &&
+        pos < begin + sz &&
+        std::isgraph(*pos))
+    *field++ = *pos++;
+
+  return (pos > begin + sz) ? nullptr : pos;
+}
+
+int parse_table(std::list<struct fsentry_t>& table, const char* filename) noexcept
 {
   struct fsentry_t entry;
   table.clear();
@@ -60,56 +77,34 @@ int parse_table(std::list<struct fsentry_t>& table, const char* filename)
 
     char* pos = line;
 
-    while(*pos && std::isspace(*pos))
-      ++pos;
-
-    for(char* field = begin = entry.device;
-        *pos && pos < begin + sizeof(fsentry_t::device) &&
-        std::isgraph(*pos); ++field, ++pos)
-      *field = *pos;
-    if(pos > begin + sizeof(fsentry_t::device))
+    pos = skip_spaces(pos);
+    pos = read_field<sizeof(fsentry_t::device)>(pos, entry.device);
+    if(pos == nullptr)
       continue;
 
-    while(*pos && std::isspace(*pos))
-      ++pos;
-
-    for(char* field = begin = entry.path;
-        *pos && pos < begin + sizeof(fsentry_t::path) &&
-        std::isgraph(*pos); ++field, ++pos)
-      *field = *pos;
-    if(pos > begin + sizeof(fsentry_t::path))
+    pos = skip_spaces(pos);
+    pos = read_field<sizeof(fsentry_t::path)>(pos, entry.path);
+    if(pos == nullptr)
       continue;
 
-    while(*pos && std::isspace(*pos))
-      ++pos;
-
-    for(char* field = begin = entry.filesystems;
-        *pos && pos < begin + sizeof(fsentry_t::filesystems) &&
-        std::isgraph(*pos); ++field, ++pos)
-      *field = *pos;
-    if(pos > begin + sizeof(fsentry_t::filesystems))
+    pos = skip_spaces(pos);
+    pos = read_field<sizeof(fsentry_t::filesystems)>(pos, entry.filesystems);
+    if(pos == nullptr)
       continue;
 
-    while(*pos && std::isspace(*pos))
-      ++pos;
-
-    for(char* field = begin = entry.options;
-        *pos && pos < begin + sizeof(fsentry_t::options) &&
-        std::isgraph(*pos); ++field, ++pos)
-      *field = *pos;
-    if(pos > begin + sizeof(fsentry_t::options))
+    pos = skip_spaces(pos);
+    pos = read_field<sizeof(fsentry_t::options)>(pos, entry.options);
+    if(pos == nullptr)
       continue;
 
-    while(*pos && std::isspace(*pos))
-      ++pos;
+    pos = skip_spaces(pos);
 
     entry.dump_frequency = *pos;
     ++pos;
     if(!std::isspace(*pos))
       continue;
 
-    while(*pos && std::isspace(*pos))
-      ++pos;
+    pos = skip_spaces(pos);
 
     entry.pass = *pos;
 
@@ -122,13 +117,13 @@ int parse_table(std::list<struct fsentry_t>& table, const char* filename)
 }
 
 
-int parse_fstab(void)
+int parse_fstab(void) noexcept
 { return parse_table(g_fstab, "/etc/fstab"); }
 
 
 #if defined(__linux__) /* Linux */
 
-int parse_mtab(void)
+int parse_mtab(void) noexcept
 { return parse_table(g_mtab, "/etc/mtab"); }
 
 #elif (defined(__APPLE__) && defined(__MACH__)) /* Darwin 7+     */ || \
@@ -137,7 +132,7 @@ int parse_mtab(void)
       defined(__OpenBSD__)                      /* OpenBSD 2.9+  */ || \
       defined(__NetBSD__)                       /* NetBSD 2+     */
 
-int parse_mtab(void)
+int parse_mtab(void) noexcept
 {
   return 0;
 }
