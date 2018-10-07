@@ -129,13 +129,13 @@ namespace Initializer
     Retrying,
   };
 
-  void addInitStep(string_literal name, Object::fslot_t<State> function, bool fatal) noexcept;
+  void addInitStep(string_literal name, Object::fslot_t<State> func, bool fatal) noexcept;
   void setStepState(string_literal step_id, State state) noexcept;
 
   struct step_t
   {
     string_literal name;
-    Object::fslot_t<State> function;
+    Object::fslot_t<State> func;
     bool fatal;
     bool have_result;
     State result;
@@ -176,7 +176,7 @@ namespace Initializer
 #endif
   };
 
-  struct daemon_data_t
+  struct provider_data_t
   {
     const char* step_id;
     const char* bin;
@@ -186,9 +186,9 @@ namespace Initializer
     bool fatal;
   };
 
-  State daemon_run(daemon_data_t* data) noexcept;
-  void restart_daemon(daemon_data_t* data) noexcept;
-  bool start_daemon(daemon_data_t* data) noexcept;
+  State provider_run   (provider_data_t* data) noexcept;
+  void restart_provider(provider_data_t* data) noexcept;
+  bool start_provider  (provider_data_t* data) noexcept;
 
 // TESTS
   // SXConfig
@@ -213,7 +213,7 @@ namespace Initializer
 
   // SCFS
 #if defined(WANT_FUSE_SCFS)
-  char scfs_mountpoint[PATH_MAX] = { 0 };
+  static char scfs_mountpoint[PATH_MAX] = { 0 };
   bool test_scfs(void) noexcept
   {
     if(parse_mtab() == posix::success_response) // parsed ok
@@ -231,7 +231,7 @@ namespace Initializer
   }
 #endif
 
- static std::list<daemon_data_t> s_daemons = {
+ static std::list<provider_data_t> s_providers = {
 #if defined(WANT_FUSE_SCFS)
    { "Mount FUSE SCFS", SCFS_BIN, SCFS_ARGS, nullptr, test_scfs, false },
 #endif
@@ -243,9 +243,9 @@ namespace Initializer
 
 }
 
-void Initializer::addInitStep(string_literal name, Object::fslot_t<State> function, bool fatal) noexcept
+void Initializer::addInitStep(string_literal name, Object::fslot_t<State> func, bool fatal) noexcept
 {
-  s_steps.emplace_back(step_t{ name, function, fatal, false, State::Clear });
+  s_steps.emplace_back(step_t{ name, func, fatal, false, State::Clear });
   Display::addItem(name);
 }
 
@@ -254,11 +254,11 @@ void Initializer::setStepState(string_literal step_id, State state) noexcept
   switch(state)
   {
     case State::Clear:    Display::setItemState(step_id, terminal::style::reset       , "        "); break;
-    case State::Starting: Display::setItemState(step_id, terminal::style::brightWhite , "Starting"); break;
-    case State::Passed:   Display::setItemState(step_id, terminal::style::brightGreen , " Passed "); break;
-    case State::Failed:   Display::setItemState(step_id, terminal::style::brightRed   , " Failed "); break;
+    case State::Starting: Display::setItemState(step_id, terminal::style::darkCyan    , "Starting"); break;
+    case State::Passed:   Display::setItemState(step_id, terminal::style::darkGreen   , " Passed "); break;
+    case State::Failed:   Display::setItemState(step_id, terminal::style::darkRed     , " Failed "); break;
     case State::Canceled: Display::setItemState(step_id, terminal::style::reset       , "Canceled"); break;
-    case State::Retrying: Display::setItemState(step_id, terminal::style::brightYellow, "Retrying"); break;
+    case State::Retrying: Display::setItemState(step_id, terminal::style::darkYellow  , "Retrying"); break;
   }
 }
 
@@ -292,8 +292,8 @@ void Initializer::start(void) noexcept
       addInitStep(vfs.step_id, [&vfs]() noexcept { return mount_vfs(&vfs); }, vfs.fatal);
   }
 
-  for(daemon_data_t& daemon : s_daemons)
-    addInitStep(daemon.step_id, [&daemon]() noexcept { return daemon_run(&daemon); }, daemon.fatal);
+  for(provider_data_t& provider : s_providers)
+    addInitStep(provider.step_id, [&provider]() noexcept { return provider_run(&provider); }, provider.fatal);
 
   for(auto& step : s_steps)
     setStepState(step.name, step.result);
@@ -302,7 +302,7 @@ void Initializer::start(void) noexcept
   {
     if(!step.have_result || step.result == State::Failed)
     {
-      step.result = step.function();
+      step.result = step.func();
       setStepState(step.name, step.result);
       if(step.result == State::Failed && step.fatal)
       {
@@ -344,7 +344,7 @@ Initializer::State Initializer::mount_vfs(vfs_mount* vfs) noexcept
   return vfs->rval == posix::success_response ? State::Passed : State::Failed;
 }
 
-Initializer::State Initializer::daemon_run(daemon_data_t* data) noexcept
+Initializer::State Initializer::provider_run(provider_data_t* data) noexcept
 {
   if(data->test())
     return State::Canceled;
@@ -352,7 +352,7 @@ Initializer::State Initializer::daemon_run(daemon_data_t* data) noexcept
   int retries = 5;
   for(; retries > 0; --retries, ::sleep(1)) // keep trying and wait a second between tries
   {
-    if(start_daemon(data) && data->test())
+    if(start_provider(data) && data->test())
       retries = INT_MIN + 1; // exit loop
     else
       setStepState(data->step_id, State::Retrying);
@@ -361,14 +361,14 @@ Initializer::State Initializer::daemon_run(daemon_data_t* data) noexcept
   if(retries == INT_MIN) // if succeeded
   {
     Object::connect(s_procs[data->bin].finished,
-        Object::fslot_t<void, pid_t, posix::error_t>([data](pid_t pid, posix::error_t errnum) noexcept { restart_daemon(data); }));
+        Object::fslot_t<void, pid_t, posix::error_t>([data](pid_t, posix::error_t) noexcept { restart_provider(data); }));
     Object::connect(s_procs[data->bin].killed,
-        Object::fslot_t<void, pid_t, posix::signal::EId>([data](pid_t pid, posix::signal::EId sig_id) noexcept { restart_daemon(data); }));
+        Object::fslot_t<void, pid_t, posix::signal::EId>([data](pid_t, posix::signal::EId) noexcept { restart_provider(data); }));
   }
   return retries == INT_MIN ? State::Passed : State::Failed;
 }
 
-bool Initializer::start_daemon(daemon_data_t* data) noexcept
+bool Initializer::start_provider(provider_data_t* data) noexcept
 {
   if(s_procs.find(data->bin) != s_procs.end()) // if process exists
     return false; // do not try to start it
@@ -381,14 +381,14 @@ bool Initializer::start_daemon(daemon_data_t* data) noexcept
       proc.invoke(); // invoke the process
 }
 
-void Initializer::restart_daemon(daemon_data_t* data) noexcept
+void Initializer::restart_provider(provider_data_t* data) noexcept
 {
   if(s_procs.find(data->bin) != s_procs.end()) // if process existed once
   {
     s_procs.erase(data->bin); // erase old process entry
     ::sleep(1); // safety delay
   }
-  start_daemon(data);
+  start_provider(data);
 }
 
 
