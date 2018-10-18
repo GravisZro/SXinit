@@ -41,7 +41,9 @@ SOURCES       = main.cpp \
 	$(PDTK)/application.cpp \
 	$(PDTK)/childprocess.cpp \
 	$(PDTK)/socket.cpp \
+	$(PDTK)/cxxutils/vfifo.cpp \
 	$(PDTK)/cxxutils/configmanip.cpp \
+	$(PDTK)/cxxutils/syslogstream.cpp \
 	$(PDTK)/specialized/procstat.cpp \
 	$(PDTK)/specialized/eventbackend.cpp \
 	$(PDTK)/specialized/FileEvent.cpp \
