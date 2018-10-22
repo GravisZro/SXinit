@@ -24,17 +24,18 @@
 #include <childprocess.h>
 #include <cxxutils/hashing.h>
 #include <specialized/mount.h>
+#include <specialized/fstable.h>
 
 #if defined(WANT_MODULES)
 # include <specialized/module.h>
 #endif
 
 #if defined(WANT_MOUNT_ROOT)
+# include <cxxutils/mountpoint_helpers.h>
 # include <specialized/blockdevices.h>
 #endif
 
 // Project
-#include "fstable.h"
 #include "display.h"
 
 #ifndef CONFIG_SERVICE
@@ -105,6 +106,14 @@
 #define DIRECTOR_SOCKET     "/" DIRECTOR_USERNAME "/io"
 #endif
 
+#ifndef MOUNT_TABLE_FILE
+#define MOUNT_TABLE_FILE  "/etc/mtab"
+#endif
+
+#ifndef FILESYSTEM_TABLE_FILE
+#define FILESYSTEM_TABLE_FILE  "/etc/fstab"
+#endif
+
 #ifdef __linux__
 # define PROCFS_NAME    "proc"
 # define PROCFS_OPTIONS "default"
@@ -113,7 +122,6 @@
 # define PROCFS_NAME    "procfs"
 # define PROCFS_OPTIONS "linux"
 #endif
-
 
 namespace Initializer
 {
@@ -156,7 +164,7 @@ namespace Initializer
   {
     string_literal step_id;
     int rval;
-    fsentry_t* fstab_entry;
+    const fsentry_t* fstab_entry;
     fsentry_t defaults;
     bool fatal;
   };
@@ -216,8 +224,9 @@ namespace Initializer
   static char scfs_mountpoint[PATH_MAX] = { 0 };
   bool test_scfs(void) noexcept
   {
-    if(parse_mtab() == posix::success_response) // parsed ok
-      for(auto pos = g_mtab.begin(); pos != g_mtab.end(); ++pos) // iterate newly parsed mount table
+    std::set<fsentry_t> mtab;
+    if(parse_table(mtab, MOUNT_TABLE_FILE) == posix::success_response) // parsed ok
+      for(auto pos = mtab.begin(); pos != mtab.end(); ++pos) // iterate newly parsed mount table
         if(!std::strcmp(pos->device, "scfs")) // if scfs is mounted
         {
           std::strncpy(scfs_mountpoint, pos->path, sizeof(scfs_mountpoint));
@@ -315,9 +324,10 @@ void Initializer::start(void) noexcept
 
 Initializer::State Initializer::read_vfs_paths(void) noexcept
 {
-  if(parse_fstab() == posix::success_response) // parse fstab
+  std::set<fsentry_t> fstab;
+  if(parse_table(fstab, FILESYSTEM_TABLE_FILE) == posix::success_response) // parse fstab
   {
-    for(fsentry_t& entry : g_fstab) // iterate all fstab entries
+    for(const fsentry_t& entry : fstab) // iterate all fstab entries
       for(vfs_mount& vfs : s_vfses) // iterate all vfses we want
         if(!std::strcmp(entry.device, vfs.defaults.device)) // if the fstab entry is the vfs we want
           vfs.fstab_entry = &entry; // copy a pointer to the entry
@@ -423,6 +433,11 @@ Initializer::State Initializer::mount_root(void) noexcept
   ::mkdir(PROCFS_PATH, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
   if(mount("proc", PROCFS_PATH, PROCFS_NAME, PROCFS_OPTIONS) == posix::success_response) // temporarily mount procfs
   {
+    if(procfs_path == nullptr)
+    {
+      procfs_path = static_cast<char*>(::malloc(sizeof(PROCFS_PATH)));
+      std::strncpy(procfs_path, PROCFS_PATH, sizeof(PROCFS_PATH));
+    }
     constexpr posix::size_t cmdlength = 0x2000; // 8KB
     char cmdline[cmdlength + 1] = { 0 }; // 8KB + NUL char
 
@@ -486,7 +501,7 @@ Initializer::State Initializer::mount_root(void) noexcept
       }
     }
 
-    blockdevices::init(PROCFS_PATH); // probe system partitions (reads /proc/partitions)
+    blockdevices::init(); // probe system partitions (reads /proc/partitions)
     blockdevice_t* root_device = nullptr;
     auto pos = boot_options.find("root");
     if(pos != boot_options.end())
