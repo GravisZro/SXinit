@@ -35,7 +35,6 @@ LDFLAGS       =
 TARGET        = sxinit
 SOURCES       = main.cpp \
 	framebuffer.cpp \
-	fstable.cpp \
 	initializer.cpp \
 	display.cpp \
 	$(PDTK)/application.cpp \
