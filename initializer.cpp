@@ -230,10 +230,8 @@ namespace Initializer
         if(!std::strcmp(pos->device, "scfs")) // if scfs is mounted
         {
           std::strncpy(scfs_mountpoint, pos->path, sizeof(scfs_mountpoint));
-          std::strncpy(config_socket_path, scfs_mountpoint, sizeof(config_socket_path) - sizeof(CONFIG_SOCKET));
-          std::strcat(config_socket_path, CONFIG_SOCKET);
-          std::strncpy(director_socket_path, scfs_mountpoint, sizeof(director_socket_path) - sizeof(DIRECTOR_SOCKET));
-          std::strcat(director_socket_path, DIRECTOR_SOCKET);
+          std::snprintf(config_socket_path  , PATH_MAX, "%s%s", scfs_mountpoint, CONFIG_SOCKET  );
+          std::snprintf(director_socket_path, PATH_MAX, "%s%s", scfs_mountpoint, DIRECTOR_SOCKET);
           return true;
         }
     return false;
