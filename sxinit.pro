@@ -51,7 +51,6 @@ INCLUDEPATH += $$PDTK
 SOURCES += \
     main.cpp \
     framebuffer.cpp \
-    fstable.cpp \
     initializer.cpp \
     display.cpp \
     $$PDTK/application.cpp \
@@ -61,6 +60,7 @@ SOURCES += \
     $$PDTK/cxxutils/vfifo.cpp \
     $$PDTK/cxxutils/configmanip.cpp \
     $$PDTK/cxxutils/syslogstream.cpp \
+    $$PDTK/cxxutils/mountpoint_helpers.cpp \
     $$PDTK/specialized/procstat.cpp \
     $$PDTK/specialized/eventbackend.cpp \
     $$PDTK/specialized/peercred.cpp \
@@ -68,13 +68,14 @@ SOURCES += \
     $$PDTK/specialized/mount.cpp \
     $$PDTK/specialized/blockdevices.cpp \
     $$PDTK/specialized/module.cpp \
+    $$PDTK/specialized/fstable.cpp \
+    $$PDTK/specialized/MountEvent.cpp \
     $$PDTK/specialized/FileEvent.cpp \
     $$PDTK/specialized/PollEvent.cpp \
     $$PDTK/specialized/ProcessEvent.cpp
 
 HEADERS += \
     framebuffer.h \
-    fstable.h \
     initializer.h \
     splash.h \
     display.h \
@@ -93,6 +94,7 @@ HEADERS += \
     $$PDTK/cxxutils/vterm.h \
     $$PDTK/cxxutils/pipedspawn.h \
     $$PDTK/cxxutils/socket_helpers.h \
+    $$PDTK/cxxutils/mountpoint_helpers.h \
     $$PDTK/specialized/procstat.h \
     $$PDTK/specialized/eventbackend.h \
     $$PDTK/specialized/mount.h \
@@ -100,6 +102,8 @@ HEADERS += \
     $$PDTK/specialized/peercred.h \
     $$PDTK/specialized/proclist.h \
     $$PDTK/specialized/module.h \
+    $$PDTK/specialized/fstable.h \
+    $$PDTK/specialized/MountEvent.h \
     $$PDTK/specialized/FileEvent.h \
     $$PDTK/specialized/PollEvent.h \
     $$PDTK/specialized/ProcessEvent.h
