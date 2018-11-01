@@ -45,65 +45,65 @@ QMAKE_LFLAGS += -L/usr/lib/x86_64-linux-musl -dynamic-linker /lib/ld-musl-x86_64
 LIBS += -lc++
 }
 
-PDTK = ../pdtk
-INCLUDEPATH += $$PDTK
+PUT = ../put
+INCLUDEPATH += $$PUT
 
 SOURCES += \
     main.cpp \
     framebuffer.cpp \
     initializer.cpp \
     display.cpp \
-    $$PDTK/application.cpp \
-    $$PDTK/childprocess.cpp \
-    $$PDTK/socket.cpp \
-    $$PDTK/asyncfd.cpp \
-    $$PDTK/cxxutils/vfifo.cpp \
-    $$PDTK/cxxutils/configmanip.cpp \
-    $$PDTK/cxxutils/syslogstream.cpp \
-    $$PDTK/cxxutils/mountpoint_helpers.cpp \
-    $$PDTK/specialized/procstat.cpp \
-    $$PDTK/specialized/eventbackend.cpp \
-    $$PDTK/specialized/peercred.cpp \
-    $$PDTK/specialized/proclist.cpp \
-    $$PDTK/specialized/mount.cpp \
-    $$PDTK/specialized/blockdevices.cpp \
-    $$PDTK/specialized/module.cpp \
-    $$PDTK/specialized/fstable.cpp \
-    $$PDTK/specialized/MountEvent.cpp \
-    $$PDTK/specialized/FileEvent.cpp \
-    $$PDTK/specialized/PollEvent.cpp \
-    $$PDTK/specialized/ProcessEvent.cpp
+    $$PUT/application.cpp \
+    $$PUT/childprocess.cpp \
+    $$PUT/socket.cpp \
+    $$PUT/asyncfd.cpp \
+    $$PUT/cxxutils/vfifo.cpp \
+    $$PUT/cxxutils/configmanip.cpp \
+    $$PUT/cxxutils/syslogstream.cpp \
+    $$PUT/cxxutils/mountpoint_helpers.cpp \
+    $$PUT/specialized/procstat.cpp \
+    $$PUT/specialized/eventbackend.cpp \
+    $$PUT/specialized/peercred.cpp \
+    $$PUT/specialized/proclist.cpp \
+    $$PUT/specialized/mount.cpp \
+    $$PUT/specialized/blockdevices.cpp \
+    $$PUT/specialized/module.cpp \
+    $$PUT/specialized/fstable.cpp \
+    $$PUT/specialized/MountEvent.cpp \
+    $$PUT/specialized/FileEvent.cpp \
+    $$PUT/specialized/PollEvent.cpp \
+    $$PUT/specialized/ProcessEvent.cpp
 
 HEADERS += \
     framebuffer.h \
     initializer.h \
     splash.h \
     display.h \
-    $$PDTK/object.h \
-    $$PDTK/application.h \
-    $$PDTK/childprocess.h \
-    $$PDTK/socket.h \
-    $$PDTK/asyncfd.h \
-    $$PDTK/cxxutils/vfifo.h \
-    $$PDTK/cxxutils/configmanip.h \
-    $$PDTK/cxxutils/syslogstream.h \
-    $$PDTK/cxxutils/posix_helpers.h \
-    $$PDTK/cxxutils/error_helpers.h \
-    $$PDTK/cxxutils/cstringarray.h \
-    $$PDTK/cxxutils/hashing.h \
-    $$PDTK/cxxutils/vterm.h \
-    $$PDTK/cxxutils/pipedspawn.h \
-    $$PDTK/cxxutils/socket_helpers.h \
-    $$PDTK/cxxutils/mountpoint_helpers.h \
-    $$PDTK/specialized/procstat.h \
-    $$PDTK/specialized/eventbackend.h \
-    $$PDTK/specialized/mount.h \
-    $$PDTK/specialized/blockdevices.h \
-    $$PDTK/specialized/peercred.h \
-    $$PDTK/specialized/proclist.h \
-    $$PDTK/specialized/module.h \
-    $$PDTK/specialized/fstable.h \
-    $$PDTK/specialized/MountEvent.h \
-    $$PDTK/specialized/FileEvent.h \
-    $$PDTK/specialized/PollEvent.h \
-    $$PDTK/specialized/ProcessEvent.h
+    $$PUT/object.h \
+    $$PUT/application.h \
+    $$PUT/childprocess.h \
+    $$PUT/socket.h \
+    $$PUT/asyncfd.h \
+    $$PUT/cxxutils/vfifo.h \
+    $$PUT/cxxutils/configmanip.h \
+    $$PUT/cxxutils/syslogstream.h \
+    $$PUT/cxxutils/posix_helpers.h \
+    $$PUT/cxxutils/error_helpers.h \
+    $$PUT/cxxutils/cstringarray.h \
+    $$PUT/cxxutils/hashing.h \
+    $$PUT/cxxutils/vterm.h \
+    $$PUT/cxxutils/pipedspawn.h \
+    $$PUT/cxxutils/socket_helpers.h \
+    $$PUT/cxxutils/mountpoint_helpers.h \
+    $$PUT/specialized/procstat.h \
+    $$PUT/specialized/eventbackend.h \
+    $$PUT/specialized/mount.h \
+    $$PUT/specialized/blockdevices.h \
+    $$PUT/specialized/peercred.h \
+    $$PUT/specialized/proclist.h \
+    $$PUT/specialized/module.h \
+    $$PUT/specialized/fstable.h \
+    $$PUT/specialized/MountEvent.h \
+    $$PUT/specialized/FileEvent.h \
+    $$PUT/specialized/PollEvent.h \
+    $$PUT/specialized/ProcessEvent.h
