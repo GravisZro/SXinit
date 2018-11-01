@@ -26,8 +26,8 @@ ifndef BUILD_PATH
   BUILD_PATH=$(SOURCE_PATH)/bin
 endif
 
-PDTK          = ./pdtk
-INCPATH       = -I. -I$(PDTK)
+PUT           = ./put
+INCPATH       = -I. -I$(PUT)
 CFLAGS        = -pipe -g -Wall -W -fPIC $(DEFINES) $(INCPATH)
 CXXFLAGS      = -pipe -std=c++14 -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics -g -Wall -W -fPIC $(DEFINES) $(INCPATH)
 LDFLAGS       = 
@@ -37,22 +37,22 @@ SOURCES       = main.cpp \
 	framebuffer.cpp \
 	initializer.cpp \
 	display.cpp \
-	$(PDTK)/application.cpp \
-	$(PDTK)/childprocess.cpp \
-	$(PDTK)/socket.cpp \
-	$(PDTK)/cxxutils/vfifo.cpp \
-	$(PDTK)/cxxutils/configmanip.cpp \
-	$(PDTK)/cxxutils/syslogstream.cpp \
-	$(PDTK)/cxxutils/mountpoint_helpers.cpp \
-	$(PDTK)/specialized/fstable.cpp \
-	$(PDTK)/specialized/procstat.cpp \
-	$(PDTK)/specialized/eventbackend.cpp \
-	$(PDTK)/specialized/FileEvent.cpp \
-	$(PDTK)/specialized/PollEvent.cpp \
-	$(PDTK)/specialized/ProcessEvent.cpp \
-	$(PDTK)/specialized/peercred.cpp \
-	$(PDTK)/specialized/proclist.cpp \
-	$(PDTK)/specialized/mount.cpp
+	$(PUT)/application.cpp \
+	$(PUT)/childprocess.cpp \
+	$(PUT)/socket.cpp \
+	$(PUT)/cxxutils/vfifo.cpp \
+	$(PUT)/cxxutils/configmanip.cpp \
+	$(PUT)/cxxutils/syslogstream.cpp \
+	$(PUT)/cxxutils/mountpoint_helpers.cpp \
+	$(PUT)/specialized/fstable.cpp \
+	$(PUT)/specialized/procstat.cpp \
+	$(PUT)/specialized/eventbackend.cpp \
+	$(PUT)/specialized/FileEvent.cpp \
+	$(PUT)/specialized/PollEvent.cpp \
+	$(PUT)/specialized/ProcessEvent.cpp \
+	$(PUT)/specialized/peercred.cpp \
+	$(PUT)/specialized/proclist.cpp \
+	$(PUT)/specialized/mount.cpp
 
 OBJS := $(SOURCES:.s=.o)
 OBJS := $(OBJS:.c=.o)
@@ -73,8 +73,8 @@ $(TARGET): OUTPUT_DIR $(OBJS)
 	$(QUIET) $(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 OUTPUT_DIR:
-	$(QUIET) mkdir -p $(BUILD_PATH)/$(PDTK)/cxxutils
-	$(QUIET) mkdir -p $(BUILD_PATH)/$(PDTK)/specialized
+	$(QUIET) mkdir -p $(BUILD_PATH)/$(PUT)/cxxutils
+	$(QUIET) mkdir -p $(BUILD_PATH)/$(PUT)/specialized
 
 clean:
 	$(QUIET) rm -f $(TARGET)
