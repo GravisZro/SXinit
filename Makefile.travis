@@ -34,25 +34,25 @@ LDFLAGS       =
 
 TARGET        = sxinit
 SOURCES       = main.cpp \
-	framebuffer.cpp \
-	initializer.cpp \
-	display.cpp \
-	$(PUT)/application.cpp \
-	$(PUT)/childprocess.cpp \
-	$(PUT)/socket.cpp \
-	$(PUT)/cxxutils/vfifo.cpp \
-	$(PUT)/cxxutils/configmanip.cpp \
-	$(PUT)/cxxutils/syslogstream.cpp \
-	$(PUT)/cxxutils/mountpoint_helpers.cpp \
-	$(PUT)/specialized/fstable.cpp \
-	$(PUT)/specialized/procstat.cpp \
-	$(PUT)/specialized/eventbackend.cpp \
-	$(PUT)/specialized/FileEvent.cpp \
-	$(PUT)/specialized/PollEvent.cpp \
-	$(PUT)/specialized/ProcessEvent.cpp \
-	$(PUT)/specialized/peercred.cpp \
-	$(PUT)/specialized/proclist.cpp \
-	$(PUT)/specialized/mount.cpp
+		framebuffer.cpp \
+		initializer.cpp \
+		display.cpp \
+		$(PUT)/application.cpp \
+		$(PUT)/childprocess.cpp \
+		$(PUT)/socket.cpp \
+		$(PUT)/cxxutils/vfifo.cpp \
+		$(PUT)/cxxutils/configmanip.cpp \
+		$(PUT)/cxxutils/syslogstream.cpp \
+		$(PUT)/cxxutils/mountpoint_helpers.cpp \
+		$(PUT)/specialized/fstable.cpp \
+		$(PUT)/specialized/procstat.cpp \
+		$(PUT)/specialized/eventbackend.cpp \
+		$(PUT)/specialized/FileEvent.cpp \
+		$(PUT)/specialized/PollEvent.cpp \
+		$(PUT)/specialized/ProcessEvent.cpp \
+		$(PUT)/specialized/peercred.cpp \
+		$(PUT)/specialized/proclist.cpp \
+		$(PUT)/specialized/mount.cpp
 
 OBJS := $(SOURCES:.s=.o)
 OBJS := $(OBJS:.c=.o)
