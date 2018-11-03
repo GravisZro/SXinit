@@ -27,7 +27,7 @@ ifndef BUILD_PATH
 endif
 
 PUT           = ./put
-INCPATH       = -I. -I$(PUT)
+INCPATH       = -I$(PUT)
 CFLAGS        = -pipe -g -Os -Wall -W -fPIC $(DEFINES) $(INCPATH)
 CXXFLAGS      = $(CFLAGS) -fno-exceptions -fno-rtti
 LDFLAGS       = 
