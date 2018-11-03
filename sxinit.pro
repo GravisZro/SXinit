@@ -69,10 +69,10 @@ SOURCES += \
     $$PUT/cxxutils/configmanip.cpp \
     $$PUT/cxxutils/syslogstream.cpp \
     $$PUT/cxxutils/mountpoint_helpers.cpp \
-    $$PUT/specialized/procstat.cpp \
     $$PUT/specialized/eventbackend.cpp \
-    $$PUT/specialized/peercred.cpp \
+    $$PUT/specialized/procstat.cpp \
     $$PUT/specialized/proclist.cpp \
+    $$PUT/specialized/peercred.cpp \
     $$PUT/specialized/mount.cpp \
     $$PUT/specialized/blockdevices.cpp \
     $$PUT/specialized/module.cpp \
@@ -104,12 +104,12 @@ HEADERS += \
     $$PUT/cxxutils/pipedspawn.h \
     $$PUT/cxxutils/socket_helpers.h \
     $$PUT/cxxutils/mountpoint_helpers.h \
-    $$PUT/specialized/procstat.h \
     $$PUT/specialized/eventbackend.h \
+    $$PUT/specialized/procstat.h \
+    $$PUT/specialized/proclist.h \
+    $$PUT/specialized/peercred.h \
     $$PUT/specialized/mount.h \
     $$PUT/specialized/blockdevices.h \
-    $$PUT/specialized/peercred.h \
-    $$PUT/specialized/proclist.h \
     $$PUT/specialized/module.h \
     $$PUT/specialized/fstable.h \
     $$PUT/specialized/MountEvent.h \
