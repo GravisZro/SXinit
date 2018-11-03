@@ -64,6 +64,7 @@ SOURCES += \
     $$PUT/childprocess.cpp \
     $$PUT/socket.cpp \
     $$PUT/asyncfd.cpp \
+    $$PUT/cxxutils/mutex.cpp \
     $$PUT/cxxutils/vfifo.cpp \
     $$PUT/cxxutils/configmanip.cpp \
     $$PUT/cxxutils/syslogstream.cpp \
@@ -91,6 +92,7 @@ HEADERS += \
     $$PUT/childprocess.h \
     $$PUT/socket.h \
     $$PUT/asyncfd.h \
+    $$PUT/cxxutils/mutex.h \
     $$PUT/cxxutils/vfifo.h \
     $$PUT/cxxutils/configmanip.h \
     $$PUT/cxxutils/syslogstream.h \
