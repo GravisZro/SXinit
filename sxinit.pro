@@ -64,12 +64,12 @@ SOURCES += \
     $$PUT/childprocess.cpp \
     $$PUT/socket.cpp \
     $$PUT/asyncfd.cpp \
-    $$PUT/cxxutils/mutex.cpp \
     $$PUT/cxxutils/vfifo.cpp \
     $$PUT/cxxutils/configmanip.cpp \
     $$PUT/cxxutils/syslogstream.cpp \
     $$PUT/cxxutils/mountpoint_helpers.cpp \
     $$PUT/specialized/eventbackend.cpp \
+    $$PUT/specialized/mutex.cpp \
     $$PUT/specialized/procstat.cpp \
     $$PUT/specialized/proclist.cpp \
     $$PUT/specialized/peercred.cpp \
@@ -92,7 +92,6 @@ HEADERS += \
     $$PUT/childprocess.h \
     $$PUT/socket.h \
     $$PUT/asyncfd.h \
-    $$PUT/cxxutils/mutex.h \
     $$PUT/cxxutils/vfifo.h \
     $$PUT/cxxutils/configmanip.h \
     $$PUT/cxxutils/syslogstream.h \
@@ -104,7 +103,9 @@ HEADERS += \
     $$PUT/cxxutils/pipedspawn.h \
     $$PUT/cxxutils/socket_helpers.h \
     $$PUT/cxxutils/mountpoint_helpers.h \
+    $$PUT/specialized/osdetect.h \
     $$PUT/specialized/eventbackend.h \
+    $$PUT/specialized/mutex.h \
     $$PUT/specialized/procstat.h \
     $$PUT/specialized/proclist.h \
     $$PUT/specialized/peercred.h \
