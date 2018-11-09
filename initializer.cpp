@@ -31,7 +31,7 @@
 #endif
 
 #if defined(WANT_MOUNT_ROOT)
-# include <cxxutils/mountpoint_helpers.h>
+# include <specialized/mountpoints.h>
 # include <specialized/blockdevices.h>
 #endif
 
