@@ -225,7 +225,7 @@ namespace Initializer
   bool test_scfs(void) noexcept
   {
     std::list<fsentry_t> mtab;
-    if(parse_table(mtab, MOUNT_TABLE_FILE) == posix::success_response) // parsed ok
+    if(mount_table(mtab)) // parse mount table
       for(auto pos = mtab.begin(); pos != mtab.end(); ++pos) // iterate newly parsed mount table
         if(!std::strcmp(pos->device, "scfs")) // if scfs is mounted
         {
@@ -323,7 +323,7 @@ void Initializer::start(void) noexcept
 Initializer::State Initializer::read_vfs_paths(void) noexcept
 {
   std::list<fsentry_t> fstab;
-  if(parse_table(fstab, FILESYSTEM_TABLE_FILE) == posix::success_response) // parse fstab
+  if(filesystem_table(fstab)) // parse filesystem table
   {
     for(const fsentry_t& entry : fstab) // iterate all fstab entries
       for(vfs_mount& vfs : s_vfses) // iterate all vfses we want
