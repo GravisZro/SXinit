@@ -106,14 +106,6 @@
 #define DIRECTOR_SOCKET     "/" DIRECTOR_USERNAME "/io"
 #endif
 
-#ifndef MOUNT_TABLE_FILE
-#define MOUNT_TABLE_FILE  "/etc/mtab"
-#endif
-
-#ifndef FILESYSTEM_TABLE_FILE
-#define FILESYSTEM_TABLE_FILE  "/etc/fstab"
-#endif
-
 #ifdef __linux__
 # define PROCFS_NAME    "proc"
 # define PROCFS_OPTIONS "default"
