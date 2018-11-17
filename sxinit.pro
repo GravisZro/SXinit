@@ -9,7 +9,7 @@ CONFIG += rtti_off
 #QMAKE_CXXFLAGS += -stdlib=libc++
 #QMAKE_LFLAGS += -stdlib=libc++
 QMAKE_CXXFLAGS += -fconstexpr-depth=256
-QMAKE_CXXFLAGS += -fconstexpr-steps=900000000
+#QMAKE_CXXFLAGS += -fconstexpr-steps=900000000
 
 # universal arguments
 QMAKE_CXXFLAGS += -fno-rtti
@@ -32,7 +32,7 @@ QMAKE_LFLAGS_RELEASE += -Wl,--gc-sections
 LIBS += -lrt
 
 # defines
-#DEFINES += INTERRUPTED_WRAPPER
+#DEFINES += DISABLE_INTERRUPTED_WRAPPER
 
 DEFINES += WANT_MOUNT_ROOT
 DEFINES += WANT_MODULES
