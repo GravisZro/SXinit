@@ -66,6 +66,7 @@ SOURCES += \
     $$PUT/cxxutils/vfifo.cpp \
     $$PUT/cxxutils/configmanip.cpp \
     $$PUT/cxxutils/syslogstream.cpp \
+    $$PUT/cxxutils/stringtoken.cpp \
     $$PUT/specialized/eventbackend.cpp \
     $$PUT/specialized/mutex.cpp \
     $$PUT/specialized/peercred.cpp \
@@ -100,6 +101,7 @@ HEADERS += \
     $$PUT/cxxutils/vterm.h \
     $$PUT/cxxutils/pipedspawn.h \
     $$PUT/cxxutils/socket_helpers.h \
+    $$PUT/cxxutils/stringtoken.h \
     $$PUT/specialized/osdetect.h \
     $$PUT/specialized/eventbackend.h \
     $$PUT/specialized/mutex.h \

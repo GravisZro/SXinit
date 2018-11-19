@@ -43,6 +43,7 @@ SOURCES       = main.cpp \
 		$(PUT)/cxxutils/vfifo.cpp \
 		$(PUT)/cxxutils/configmanip.cpp \
 		$(PUT)/cxxutils/syslogstream.cpp \
+		$(PUT)/cxxutils/stringtoken.cpp \
 		$(PUT)/specialized/eventbackend.cpp \
 		$(PUT)/specialized/mutex.cpp \
 		$(PUT)/specialized/peercred.cpp \
