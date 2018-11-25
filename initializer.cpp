@@ -423,11 +423,7 @@ Initializer::State Initializer::mount_root(void) noexcept
   ::mkdir(PROCFS_PATH, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); // create directory (if it doesn't exist)
   if(mount("proc", PROCFS_PATH, PROCFS_NAME, PROCFS_OPTIONS) == posix::success_response) // temporarily mount procfs
   {
-    if(procfs_path == nullptr)
-    {
-      procfs_path = static_cast<char*>(::malloc(sizeof(PROCFS_PATH)));
-      std::strncpy(procfs_path, PROCFS_PATH, sizeof(PROCFS_PATH));
-    }
+    reinitialize_paths();
     constexpr posix::size_t cmdlength = 0x2000; // 8KB
     char cmdline[cmdlength + 1] = { 0 }; // 8KB + NUL char
 
