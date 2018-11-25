@@ -52,6 +52,7 @@ SOURCES       = main.cpp \
 		$(PUT)/specialized/fstable.cpp \
 		$(PUT)/specialized/mountpoints.cpp \
 		$(PUT)/specialized/mount.cpp \
+		$(PUT)/specialized/module.cpp \
 		$(PUT)/specialized/FileEvent.cpp \
 		$(PUT)/specialized/PollEvent.cpp \
 		$(PUT)/specialized/ProcessEvent.cpp
