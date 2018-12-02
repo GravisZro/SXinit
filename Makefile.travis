@@ -53,9 +53,9 @@ SOURCES       = main.cpp \
 		$(PUT)/specialized/mountpoints.cpp \
 		$(PUT)/specialized/mount.cpp \
 		$(PUT)/specialized/module.cpp \
-		$(PUT)/specialized/FileEvent.cpp \
-		$(PUT)/specialized/PollEvent.cpp \
-		$(PUT)/specialized/ProcessEvent.cpp
+		$(PUT)/specialized/fileevent.cpp \
+		$(PUT)/specialized/pollevent.cpp \
+		$(PUT)/specialized/processevent.cpp
 
 OBJS := $(SOURCES:.s=.o)
 OBJS := $(OBJS:.c=.o)
