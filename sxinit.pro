@@ -77,10 +77,10 @@ SOURCES += \
     $$PUT/specialized/mount.cpp \
     $$PUT/specialized/blockdevices.cpp \
     $$PUT/specialized/module.cpp \
-    $$PUT/specialized/MountEvent.cpp \
-    $$PUT/specialized/FileEvent.cpp \
-    $$PUT/specialized/PollEvent.cpp \
-    $$PUT/specialized/ProcessEvent.cpp
+    $$PUT/specialized/mountevent.cpp \
+    $$PUT/specialized/fileevent.cpp \
+    $$PUT/specialized/pollevent.cpp \
+    $$PUT/specialized/processevent.cpp
 
 HEADERS += \
     framebuffer.h \
@@ -113,7 +113,7 @@ HEADERS += \
     $$PUT/specialized/mount.h \
     $$PUT/specialized/blockdevices.h \
     $$PUT/specialized/module.h \
-    $$PUT/specialized/MountEvent.h \
-    $$PUT/specialized/FileEvent.h \
-    $$PUT/specialized/PollEvent.h \
-    $$PUT/specialized/ProcessEvent.h
+    $$PUT/specialized/mountevent.h \
+    $$PUT/specialized/fileevent.h \
+    $$PUT/specialized/pollevent.h \
+    $$PUT/specialized/processevent.h
