@@ -117,7 +117,7 @@ bool Display::setItem(string_literal item, uint16_t row, uint16_t column) noexce
 {
   if(row >= maxRows || column == maxColumns)
     return false;
-  size_t len = std::strlen(item);
+  size_t len = posix::strlen(item);
   if(len > UINT16_MAX)
     return false;
   uint16_t& current = item_column_widths.at(column);

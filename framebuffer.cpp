@@ -21,19 +21,19 @@ bool FrameBuffer::open(const char* device)
   flaw(m_fd < 0,
        terminal::warning,,
        false,
-       "Unable to open framebuffer device: %s", std::strerror(errno))
+       "Unable to open framebuffer device: %s", posix::strerror(errno))
 
   struct fb_var_screeninfo screen_info;
   flaw(posix::ioctl(m_fd, FBIOGET_VSCREENINFO, &screen_info),
        terminal::warning,,
        false,
-       "Unable to get virtual screen info from framebuffer: %s", std::strerror(errno))
+       "Unable to get virtual screen info from framebuffer: %s", posix::strerror(errno))
 
   struct fb_fix_screeninfo fixed_info;
   flaw(posix::ioctl(m_fd, FBIOGET_FSCREENINFO, &fixed_info),
        terminal::warning,,
        false,
-       "Unable to get fixed screen info from framebuffer: %s", std::strerror(errno))
+       "Unable to get fixed screen info from framebuffer: %s", posix::strerror(errno))
 
   m_bufheight = screen_info.yres_virtual;
   m_bufwidth  = fixed_info.line_length;

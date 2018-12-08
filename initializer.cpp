@@ -6,12 +6,6 @@
 #undef WANT_MODULES
 #endif
 
-// POSIX
-#include <sys/stat.h>
-
-// POSIX++
-#include <climits>
-
 // STL
 #include <string>
 #include <unordered_map>
@@ -22,6 +16,7 @@
 // PDTK
 #include <object.h>
 #include <childprocess.h>
+#include <cxxutils/posix_helpers.h>
 #include <cxxutils/hashing.h>
 #include <specialized/mount.h>
 #include <specialized/fstable.h>
@@ -33,6 +28,7 @@
 #if defined(WANT_MOUNT_ROOT)
 # include <specialized/mountpoints.h>
 # include <specialized/blockdevices.h>
+# include <specialized/blockinfo.h>
 #endif
 
 // Project
@@ -197,7 +193,7 @@ namespace Initializer
   bool test_config_service(void) noexcept
   {
     struct stat data;
-    return ::stat(config_socket_path, &data) == posix::success_response && // stat file on VFS worked AND
+    return posix::stat(config_socket_path, &data) && // stat file on VFS worked AND
         data.st_mode & S_IFSOCK ; // it's a socket file
   }
 #endif
@@ -207,7 +203,7 @@ namespace Initializer
   bool test_director_service(void) noexcept
   {
     struct stat data;
-    return ::stat(director_socket_path, &data) == posix::success_response && // stat file on VFS worked AND
+    return posix::stat(director_socket_path, &data) && // stat file on VFS worked AND
         data.st_mode & S_IFSOCK; // it's a socket file
   }
 
@@ -219,11 +215,11 @@ namespace Initializer
     std::list<fsentry_t> mtab;
     if(mount_table(mtab)) // parse mount table
       for(auto pos = mtab.begin(); pos != mtab.end(); ++pos) // iterate newly parsed mount table
-        if(!std::strcmp(pos->device, "scfs")) // if scfs is mounted
+        if(!posix::strcmp(pos->device, "scfs")) // if scfs is mounted
         {
-          std::strncpy(scfs_mountpoint, pos->path, sizeof(scfs_mountpoint));
-          std::snprintf(config_socket_path  , PATH_MAX, "%s%s", scfs_mountpoint, CONFIG_SOCKET  );
-          std::snprintf(director_socket_path, PATH_MAX, "%s%s", scfs_mountpoint, DIRECTOR_SOCKET);
+          posix::strncpy(scfs_mountpoint, pos->path, sizeof(scfs_mountpoint));
+          posix::snprintf(config_socket_path  , PATH_MAX, "%s%s", scfs_mountpoint, CONFIG_SOCKET  );
+          posix::snprintf(director_socket_path, PATH_MAX, "%s%s", scfs_mountpoint, DIRECTOR_SOCKET);
           return true;
         }
     return false;
@@ -272,7 +268,7 @@ void Initializer::start(void) noexcept
 
   if(!posix::pipe(stderr_pipe) ||
      !posix::dup2(stderr_pipe[Write], STDERR_FILENO))
-    terminal::write("%s Unable to redirect stderr: %s", terminal::warning, std::strerror(errno));
+    terminal::write("%s Unable to redirect stderr: %s", terminal::warning, posix::strerror(errno));
 
   Display::clearItems();
   Display::setItemsLocation(3, 1);
@@ -319,12 +315,12 @@ Initializer::State Initializer::read_vfs_paths(void) noexcept
   {
     for(const fsentry_t& entry : fstab) // iterate all fstab entries
       for(vfs_mount& vfs : s_vfses) // iterate all vfses we want
-        if(!std::strcmp(entry.device, vfs.defaults.device)) // if the fstab entry is the vfs we want
+        if(!posix::strcmp(entry.device, vfs.defaults.device)) // if the fstab entry is the vfs we want
           vfs.fstab_entry = &entry; // copy a pointer to the entry
     return State::Passed;
   }
   else
-    Display::bailoutLine("Unable to parse /etc/fstab!: %s", std::strerror(errno));
+    Display::bailoutLine("Unable to parse /etc/fstab!: %s", posix::strerror(errno));
   return State::Failed;
 }
 
@@ -399,7 +395,7 @@ Initializer::State Initializer::load_modules(void) noexcept
 
   if(fd == posix::error_response)
   {
-    Display::bailoutLine("Unable to open list of modules to load: %s", std::strerror(errno));
+    Display::bailoutLine("Unable to open list of modules to load: %s", posix::strerror(errno));
     return State::Failed;
   }
 
@@ -407,7 +403,7 @@ Initializer::State Initializer::load_modules(void) noexcept
 
   if(false)
   {
-    Display::bailoutLine("Unable to load module %s: %s", "xyz", std::strerror(errno));
+    Display::bailoutLine("Unable to load module %s: %s", "xyz", posix::strerror(errno));
     return State::Failed;
   }
   return State::Passed;
@@ -440,15 +436,15 @@ Initializer::State Initializer::mount_root(void) noexcept
       key.clear();
       value.clear();
 
-      while(*pos && std::isspace(*pos))
+      while(*pos && posix::isspace(*pos))
         ++pos;
 
-      for(; *pos && pos < cmdline + cmdlength && std::isgraph(*pos) && *pos != '='; ++pos)
+      for(; *pos && pos < cmdline + cmdlength && posix::isgraph(*pos) && *pos != '='; ++pos)
         key.push_back(char(::tolower(*pos))); // options must be lowercase
 
       if(*pos == '=')
       {
-        for(++pos; *pos && pos < cmdline + cmdlength && std::isgraph(*pos); ++pos)
+        for(++pos; *pos && pos < cmdline + cmdlength && posix::isgraph(*pos); ++pos)
           value.push_back(*pos);
         boot_options.emplace(key, value);
       }
@@ -466,10 +462,10 @@ Initializer::State Initializer::mount_root(void) noexcept
             boot_options.emplace("noresume", "premount");
             break;
           case "ro"_hash:
-            std::strncpy(root_entry.options, "ro", sizeof(fsentry_t::options));
+            posix::strncpy(root_entry.options, "ro", sizeof(fsentry_t::options));
             break;
           case "rw"_hash:
-            std::strncpy(root_entry.options, "rw", sizeof(fsentry_t::options));
+            posix::strncpy(root_entry.options, "rw", sizeof(fsentry_t::options));
             break;
           case "fastboot"_hash:
             boot_options.emplace("fsck.mode", "skip");
@@ -519,8 +515,8 @@ Initializer::State Initializer::mount_root(void) noexcept
 
       if(root_device != nullptr) // found a device
       {
-        std::strncpy(root_entry.device, root_device->path, sizeof(fsentry_t::device)); // copy over data
-        std::strncpy(root_entry.filesystems, root_device->fstype, sizeof(fsentry_t::filesystems));
+        posix::strncpy(root_entry.device, root_device->path, sizeof(fsentry_t::device)); // copy over data
+        posix::strncpy(root_entry.filesystems, root_device->fstype, sizeof(fsentry_t::filesystems));
       }
       else
       {
@@ -538,7 +534,7 @@ Initializer::State Initializer::mount_root(void) noexcept
   }
   else
   {
-    Display::bailoutLine("Unable to temporarily mount proc to get boot arguments and find devices: %s", std::strerror(errno));
+    Display::bailoutLine("Unable to temporarily mount proc to get boot arguments and find devices: %s", posix::strerror(errno));
     return State::Failed;
   }
 # else
@@ -546,7 +542,7 @@ Initializer::State Initializer::mount_root(void) noexcept
 # endif
   if(mount(root_entry.device, "/", root_entry.filesystems, root_entry.options) != posix::success_response) // mount directly on top of Linux rootfs
   {
-    Display::bailoutLine("Unable to mount device \"%s\": %s", root_entry.device, std::strerror(errno));
+    Display::bailoutLine("Unable to mount device \"%s\": %s", root_entry.device, posix::strerror(errno));
     return State::Failed;
   }
   return State::Passed;

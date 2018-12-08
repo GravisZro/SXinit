@@ -75,6 +75,7 @@ SOURCES += \
     $$PUT/specialized/fstable.cpp \
     $$PUT/specialized/mountpoints.cpp \
     $$PUT/specialized/mount.cpp \
+    $$PUT/specialized/blockinfo.cpp \
     $$PUT/specialized/blockdevices.cpp \
     $$PUT/specialized/module.cpp \
     $$PUT/specialized/mountevent.cpp \
@@ -111,6 +112,7 @@ HEADERS += \
     $$PUT/specialized/fstable.h \
     $$PUT/specialized/mountpoints.h \
     $$PUT/specialized/mount.h \
+    $$PUT/specialized/blockinfo.h \
     $$PUT/specialized/blockdevices.h \
     $$PUT/specialized/module.h \
     $$PUT/specialized/mountevent.h \

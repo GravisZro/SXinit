@@ -50,6 +50,8 @@ SOURCES       = main.cpp \
 		$(PUT)/specialized/procstat.cpp \
 		$(PUT)/specialized/proclist.cpp \
 		$(PUT)/specialized/fstable.cpp \
+		$(PUT)/specialized/blockinfo.cpp \
+		$(PUT)/specialized/blockdevices.cpp \
 		$(PUT)/specialized/mountpoints.cpp \
 		$(PUT)/specialized/mount.cpp \
 		$(PUT)/specialized/module.cpp \
