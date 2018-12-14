@@ -1,12 +1,5 @@
 #include "display.h"
 
-// POSIX
-#include <unistd.h>
-
-// POSIX++
-#include <cstring>
-#include <cstdio>
-
 // STL
 #include <map>
 #include <array>
@@ -22,7 +15,7 @@
 
 namespace Display
 {
-  static bool kernel_called = ::getpid() == 1;
+  static bool kernel_called = posix::getpid() == 1;
 #ifdef WANT_SPLASH
   static Framebuffer fb;
 #endif
