@@ -357,9 +357,9 @@ Initializer::State Initializer::provider_run(provider_data_t* data) noexcept
   if(retries == INT_MIN) // if succeeded
   {
     Object::connect(s_procs[data->bin].finished,
-        Object::fslot_t<void, pid_t, posix::error_t>([data](pid_t, posix::error_t) noexcept { restart_provider(data); }));
+        [data](pid_t, posix::error_t) noexcept { restart_provider(data); });
     Object::connect(s_procs[data->bin].killed,
-        Object::fslot_t<void, pid_t, posix::Signal::EId>([data](pid_t, posix::Signal::EId) noexcept { restart_provider(data); }));
+        [data](pid_t, posix::Signal::EId) noexcept { restart_provider(data); });
   }
   return retries == INT_MIN ? State::Passed : State::Failed;
 }
