@@ -48,7 +48,7 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-3.9']
-          packages: ['clang-3.9', 'libstdc++-4.9-dev']
+          packages: ['clang-3.9', 'llvm-3.9-dev', 'libstdc++-4.9-dev']
       env:
         - COMPILER=clang++-3.9
 
@@ -58,7 +58,7 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-4.0']
-          packages: ['clang-4.0', 'libstdc++-4.9-dev']
+          packages: ['clang-4.0', 'llvm-4.0-dev', 'libstdc++-4.9-dev']
       env:
         - COMPILER=clang++-4.0
 
