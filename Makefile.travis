@@ -41,7 +41,7 @@ STATICLIB     = libput.a
 INCLUDE_PATH  = -I$(SOURCE_PATH)
 CFLAGS        = -pipe -g -Os -Wall -W -fPIC -flto $(DEFINES) $(INCLUDE_PATH)
 CXXFLAGS      = $(CFLAGS) -fno-exceptions -fno-rtti
-LDFLAGS       = 
+LDFLAGS       = $(BUILD_PATH)/$(STATICLIB)
 
 TARGET        = sxinit
 SOURCES       = main.cpp \
@@ -63,18 +63,19 @@ $(BUILD_PATH)/%.o: $(SOURCE_PATH)/%.c
 	@echo [Compiling]: $<
 	$(QUIET) $(CC) -c -o $@ $< $(CSTANDARD) $(CFLAGS)
 
-$(TARGET): OUTPUT_DIR $(OBJS) $(STATICLIB)
+$(TARGET): OUTPUT_DIR $(OBJS) $(BUILD_PATH)/$(STATICLIB)
 	@echo [ Linking ]: $@
-	$(QUIET) $(CXX) -o $@ $(OBJS) $(PUT)/$(STATICLIB) $(LDFLAGS)
+	$(QUIET) $(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
-
-$(STATICLIB): $(PUT)
+$(BUILD_PATH)/$(STATICLIB): $(PUT)
 	@echo [Compiling]: $@
-	$(QUIET) make -f $(PUT)/Makefile.travis $(STATICLIB) -e SOURCE_PATH=$(PUT) VERBOSE=$(VERBOSE) CC=$(CC) CXX=$(CXX) CSTANDARD=$(CSTANDARD) CXXSTANDARD=$(CXXSTANDARD)
+	$(QUIET) make -f $(PUT)/Makefile.travis $(BUILD_PATH)/$(STATICLIB) -e \
+		SOURCE_PATH=$(PUT) BUILD_PATH=$(BUILD_PATH) \
+		VERBOSE=$(VERBOSE) CC=$(CC) CXX=$(CXX) \
+		CSTANDARD=$(CSTANDARD) CXXSTANDARD=$(CXXSTANDARD)
 
 OUTPUT_DIR:
-	$(QUIET) mkdir -p $(BUILD_PATH)/$(PUT)/cxxutils
-	$(QUIET) mkdir -p $(BUILD_PATH)/$(PUT)/specialized
+	$(QUIET) mkdir -p $(BUILD_PATH)
 
 clean:
 	$(QUIET) rm -f $(TARGET)
