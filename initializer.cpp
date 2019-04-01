@@ -13,22 +13,22 @@
 #include <algorithm>
 #include <functional>
 
-// PDTK
-#include <object.h>
-#include <childprocess.h>
-#include <cxxutils/posix_helpers.h>
-#include <cxxutils/hashing.h>
-#include <specialized/mount.h>
-#include <specialized/fstable.h>
+// PUT
+#include <put/object.h>
+#include <put/childprocess.h>
+#include <put/cxxutils/posix_helpers.h>
+#include <put/cxxutils/hashing.h>
+#include <put/specialized/mount.h>
+#include <put/specialized/fstable.h>
 
 #if defined(WANT_MODULES)
-# include <specialized/module.h>
+# include <put/specialized/module.h>
 #endif
 
 #if defined(WANT_MOUNT_ROOT)
-# include <specialized/mountpoints.h>
-# include <specialized/blockdevices.h>
-# include <specialized/blockinfo.h>
+# include <put/specialized/mountpoints.h>
+# include <put/specialized/blockdevices.h>
+# include <put/specialized/blockinfo.h>
 #endif
 
 // Project

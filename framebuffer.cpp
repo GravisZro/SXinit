@@ -9,9 +9,9 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
-// PDTK
-#include <cxxutils/error_helpers.h>
-#include <cxxutils/vterm.h>
+// PUT
+#include <put/cxxutils/error_helpers.h>
+#include <put/cxxutils/vterm.h>
 
 
 bool FrameBuffer::open(const char* device)
