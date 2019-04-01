@@ -1,5 +1,6 @@
 ifneq ($(VERBOSE),true)
   QUIET:=@
+  VERBOSE=false
 endif
 
 ifndef CC
@@ -37,8 +38,8 @@ endif
 
 PUT           = put
 STATICLIB     = libput.a
-INCPATH       = -I.
-CFLAGS        = -pipe -g -Os -Wall -W -fPIC -flto $(DEFINES) $(INCPATH)
+INCLUDE_PATH  = -I$(SOURCE_PATH)
+CFLAGS        = -pipe -g -Os -Wall -W -fPIC -flto $(DEFINES) $(INCLUDE_PATH)
 CXXFLAGS      = $(CFLAGS) -fno-exceptions -fno-rtti
 LDFLAGS       = 
 
@@ -64,12 +65,12 @@ $(BUILD_PATH)/%.o: $(SOURCE_PATH)/%.c
 
 $(TARGET): OUTPUT_DIR $(OBJS) $(STATICLIB)
 	@echo [ Linking ]: $@
-	$(QUIET) $(CXX) -o $@ $(OBJS) put/$(STATICLIB) $(LDFLAGS)
+	$(QUIET) $(CXX) -o $@ $(OBJS) $(PUT)/$(STATICLIB) $(LDFLAGS)
 
 
 $(STATICLIB): $(PUT)
 	@echo [Compiling]: $@
-	$(QUIET) cd $(PUT) && make -f Makefile.travis $(STATICLIB)
+	$(QUIET) make -f $(PUT)/Makefile.travis $(STATICLIB) -e SOURCE_PATH=$(PUT) VERBOSE=$(VERBOSE) CC=$(CC) CXX=$(CXX) CSTANDARD=$(CSTANDARD) CXXSTANDARD=$(CXXSTANDARD)
 
 OUTPUT_DIR:
 	$(QUIET) mkdir -p $(BUILD_PATH)/$(PUT)/cxxutils
