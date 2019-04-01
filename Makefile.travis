@@ -27,6 +27,10 @@ ifndef BUILD_PATH
   BUILD_PATH=$(SOURCE_PATH)/bin
 endif
 
+ifndef LTO_FLAG
+  LTO_FLAG=-flto
+endif
+
 ifneq ($(shell getconf _XOPEN_VERSION 1>/dev/null 2>&1; echo $$?),0)
   OUTPUTFILE:=posix_features.h
   TESTLIST:=atexit memmove strerror strnlen atoll strtof strtold strtoll strtoul strtoull snprintf faccessat fexecve fchdir seteuid setegid sigqueue killpg
@@ -39,9 +43,9 @@ endif
 PUT           = put
 STATICLIB     = $(BUILD_PATH)/libput.a
 INCLUDE_PATH  = -I$(SOURCE_PATH)
-CFLAGS        = -pipe -g -Os -Wall -W -fPIC -flto $(DEFINES) $(INCLUDE_PATH)
+CFLAGS        = -pipe -g -Os -Wall -W -fPIC $(LTO_FLAG) $(DEFINES) $(INCLUDE_PATH)
 CXXFLAGS      = $(CFLAGS) -fno-exceptions -fno-rtti
-LDFLAGS       = $(STATICLIB) -flto
+LDFLAGS       = $(STATICLIB) $(LTO_FLAG)
 
 TARGET        = sxinit
 SOURCES       = main.cpp \
@@ -72,7 +76,8 @@ $(STATICLIB): $(PUT)
 	$(QUIET) make -f $(PUT)/Makefile.travis $(STATICLIB) -e \
 		SOURCE_PATH=$(PUT) BUILD_PATH=$(BUILD_PATH) \
 		VERBOSE=$(VERBOSE) CC=$(CC) CXX=$(CXX) \
-		CSTANDARD=$(CSTANDARD) CXXSTANDARD=$(CXXSTANDARD)
+		CSTANDARD=$(CSTANDARD) CXXSTANDARD=$(CXXSTANDARD) \
+		LTO_FLAG=$(LTO_FLAG)
 
 OUTPUT_DIR:
 	$(QUIET) mkdir -p $(BUILD_PATH)
