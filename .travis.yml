@@ -55,7 +55,7 @@ matrix:
           packages: ['clang-3.9', 'libstdc++-4.9-dev']
       env:
         - COMPILER=clang++-3.9
-	- LTO_FLAG=
+	- LTO_FLAG= 
 
     - os: linux
       dist: trusty
@@ -66,7 +66,7 @@ matrix:
           packages: ['clang-4.0', 'libstdc++-4.9-dev']
       env:
         - COMPILER=clang++-4.0
-	- LTO_FLAG=
+	- LTO_FLAG= 
 
     - os: osx
       osx_image: xcode8.3
