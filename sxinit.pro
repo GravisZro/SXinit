@@ -22,100 +22,41 @@ QMAKE_CXXFLAGS_RELEASE += -Os
 QMAKE_CXXFLAGS_RELEASE += -fno-asynchronous-unwind-tables
 #QMAKE_CXXFLAGS_RELEASE += -fstack-protector-all
 QMAKE_CXXFLAGS_RELEASE += -fstack-protector-strong
+QMAKE_CXXFLAGS_RELEASE += -fstack-clash-protection
 
 # optimizations
 QMAKE_CXXFLAGS_RELEASE += -fdata-sections
 QMAKE_CXXFLAGS_RELEASE += -ffunction-sections
+QMAKE_CXXFLAGS_RELEASE += -flto
 QMAKE_LFLAGS_RELEASE += -Wl,--gc-sections
+QMAKE_LFLAGS_RELEASE += -flto
 
 # libraries
 LIBS += -lrt
+LIBS += -lpthread
 
 # defines
+QMAKE_CXXFLAGS_DEBUG += -DDEBUG
+QMAKE_CXXFLAGS_RELEASE += -DRELEASE
+#DEFINES += __CONTINUOUS_INTEGRATION__
+
 #DEFINES += DISABLE_INTERRUPTED_WRAPPER
-
-DEFINES += WANT_MOUNT_ROOT
-DEFINES += WANT_MODULES
-linux:DEFINES += WANT_SYSFS
-DEFINES += WANT_NATIVE_SCFS
-
-DEFINES += WANT_CONFIG_SERVICE
-DEFINES += WANT_FUSE_SCFS
-
-#LIBS += -lpthread
-experimental {
-INCLUDEPATH += /usr/include/x86_64-linux-musl
-INCLUDEPATH += /usr/include/c++/v1
-INCLUDEPATH += /usr/include
-INCLUDEPATH += /usr/include/x86_64-linux-gnu
-QMAKE_LFLAGS += -L/usr/lib/x86_64-linux-musl -dynamic-linker /lib/ld-musl-x86_64.so.1
-LIBS += -lc++
-}
-
-PUT = ../put
-INCLUDEPATH += $$PUT
+#DEFINES += SINGLE_THREADED_APPLICATION
+#DEFINES += FORCE_POSIX_TIMERS
+#DEFINES += FORCE_POSIX_POLL
+#DEFINES += FORCE_POSIX_MUTEXES
+#DEFINES += FORCE_PROCESS_POLLING
 
 SOURCES += \
     main.cpp \
     framebuffer.cpp \
     initializer.cpp \
-    display.cpp \
-    $$PUT/application.cpp \
-    $$PUT/childprocess.cpp \
-    $$PUT/socket.cpp \
-    $$PUT/cxxutils/vfifo.cpp \
-    $$PUT/cxxutils/configmanip.cpp \
-    $$PUT/cxxutils/syslogstream.cpp \
-    $$PUT/cxxutils/stringtoken.cpp \
-    $$PUT/specialized/eventbackend.cpp \
-    $$PUT/specialized/mutex.cpp \
-    $$PUT/specialized/peercred.cpp \
-    $$PUT/specialized/procstat.cpp \
-    $$PUT/specialized/proclist.cpp \
-    $$PUT/specialized/fstable.cpp \
-    $$PUT/specialized/mountpoints.cpp \
-    $$PUT/specialized/mount.cpp \
-    $$PUT/specialized/blockinfo.cpp \
-    $$PUT/specialized/blockdevices.cpp \
-    $$PUT/specialized/module.cpp \
-    $$PUT/specialized/mountevent.cpp \
-    $$PUT/specialized/fileevent.cpp \
-    $$PUT/specialized/pollevent.cpp \
-    $$PUT/specialized/processevent.cpp
+    display.cpp
 
 HEADERS += \
     framebuffer.h \
     initializer.h \
     splash.h \
-    display.h \
-    $$PUT/object.h \
-    $$PUT/application.h \
-    $$PUT/childprocess.h \
-    $$PUT/socket.h \
-    $$PUT/cxxutils/vfifo.h \
-    $$PUT/cxxutils/configmanip.h \
-    $$PUT/cxxutils/syslogstream.h \
-    $$PUT/cxxutils/posix_helpers.h \
-    $$PUT/cxxutils/error_helpers.h \
-    $$PUT/cxxutils/cstringarray.h \
-    $$PUT/cxxutils/hashing.h \
-    $$PUT/cxxutils/vterm.h \
-    $$PUT/cxxutils/pipedspawn.h \
-    $$PUT/cxxutils/socket_helpers.h \
-    $$PUT/cxxutils/stringtoken.h \
-    $$PUT/specialized/osdetect.h \
-    $$PUT/specialized/eventbackend.h \
-    $$PUT/specialized/mutex.h \
-    $$PUT/specialized/peercred.h \
-    $$PUT/specialized/procstat.h \
-    $$PUT/specialized/proclist.h \
-    $$PUT/specialized/fstable.h \
-    $$PUT/specialized/mountpoints.h \
-    $$PUT/specialized/mount.h \
-    $$PUT/specialized/blockinfo.h \
-    $$PUT/specialized/blockdevices.h \
-    $$PUT/specialized/module.h \
-    $$PUT/specialized/mountevent.h \
-    $$PUT/specialized/fileevent.h \
-    $$PUT/specialized/pollevent.h \
-    $$PUT/specialized/processevent.h
+    display.h
+
+include(put/put.pri)
